@@ -1,6 +1,7 @@
 import os
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 
 base_path = os.path.abspath(os.path.dirname(__file__))
 image_path = os.path.join(base_path, "image_data", "fps_24")
@@ -9,20 +10,42 @@ save_path = os.path.join(base_path, "binary_data")
 image_name = "centering_coincidence_0327.png"
 crop_image_name = "centering_coincidence_0327_crop.png"
 
-def binary_threshold_seg(img):
+def binary_threshold_seg(img, rgb_img):
 
     x, y, w, h = 154, 446, 141, 570
     crop = img[y: y+h, x:x+w]
+    rgb_crop = rgb_img[y: y+h, x:x+w]
 
     # image GaussianBlur
     blur = cv2.GaussianBlur(crop,(5,5),0)
 
-    # image binary
-    ret, img_binary = cv2.threshold(blur, 0, 255, cv2.THRESH_OTSU)
+    # otsu threshold binary
+    ret, img_binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+
+    # canny edge detection
+    edges = cv2.Canny(crop, 30, 70)
+
+    # distance transform
+    dist_trans = cv2.distanceTransform(crop, cv2.DIST_L2, 0)
+    dist_trans = cv2.normalize(dist_trans, dist_trans, 0, 1.0, cv2.NORM_MINMAX)
+
+    # Hough Transform
+    minLineLength = 100
+    maxLineGap = 1
+
+    lines = cv2.HoughLinesP(img_binary, 1, np.pi / 180, 15, minLineLength, maxLineGap)
+
+    for x in range(0, len(lines)):
+        for x1, y1, x2, y2 in lines[x]:
+            cv2.line(crop, (x1, y1), (x2, y2), (0, 128, 0), 2)
+
 
     # image save
-    cv2.imwrite(os.path.join(save_path, image_name), img_binary)
-    cv2.imwrite(os.path.join(save_path, crop_image_name), crop)
+    cv2.imwrite(os.path.join(save_path, "otsu_"+image_name), img_binary)
+    cv2.imwrite(os.path.join(save_path, "canny_"+image_name), edges)
+    cv2.imwrite(os.path.join(save_path, "distance_transform_"+image_name), dist_trans)
+    cv2.imwrite(os.path.join(save_path, "blur_"+crop_image_name), blur)
+    cv2.imwrite(os.path.join(save_path, "hough_"+crop_image_name), crop)
 
 def his(img):
 
@@ -59,7 +82,7 @@ if __name__ == "__main__":
 
 
     # 실행 코드 함수 List
-    # binary_threshold_seg(image_clone)
+    binary_threshold_seg(image_clone, raw_90)
     # his(raw_img)
-    blue_threshold(raw_90)
+    # blue_threshold(raw_90)
 
