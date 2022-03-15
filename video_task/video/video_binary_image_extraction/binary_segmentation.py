@@ -82,17 +82,6 @@ def his(img):
 
 def cluster_k_means(gray_img, rgb_img):
 
-    # rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
-    # r, g, b = cv2.split(rgb_img)
-    # r = r.flatten()
-    # g = g.flatten()
-    # b = b.flatten()
-    #
-    # fig = plt.figure()
-    # ax = Axes3D(fig)
-    # ax.scatter(r, g, b)
-    # plt.show()
-
     x, y, w, h = 154, 446, 141, 570
     gray_img = gray_img[y: y+h, x:x+w]
     vectorized_gray = gray_img.reshape((-1, 1))
@@ -120,7 +109,6 @@ def cluster_k_means(gray_img, rgb_img):
     K = 50
     attempts = 10
 
-
     ret_rgb, label_rgb, center_rgb = cv2.kmeans(vectorized_rgb, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
     ret_gray, label_gray, center_gray = cv2.kmeans(vectorized_gray, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
 
@@ -139,47 +127,6 @@ def cluster_k_means(gray_img, rgb_img):
         plt.subplot(1, K, i+1), plt.imshow(globals()["label_{}".format(i+1)])
         plt.title(f'Segmented Image when {i+1}/{K}'), plt.xticks([]), plt.yticks([])
     plt.show()
-
-    # label_1[np.where(label_rgb==0)] = 1
-    # label_2[np.where(label_rgb==1)] = 1
-    # label_3[np.where(label_rgb==2)] = 1
-    # label_4[np.where(label_rgb==3)] = 1
-    # label_5[np.where(label_rgb==4)] = 1
-
-    # figure_size = 15
-    # plt.figure(figsize=(figure_size, figure_size))
-    # plt.subplot(1, 5, 1), plt.imshow(label_1.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-    # plt.title(f'Segmented Image when 1/{K}'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(1, 5, 2), plt.imshow(label_2.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-    # plt.title(f'Segmented Image when 2/{K}'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(1, 5, 3), plt.imshow(label_3.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-    # plt.title(f'Segmented Image when 3/{K}'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(1, 5, 4), plt.imshow(label_4.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-    # plt.title(f'Segmented Image when 4/{K}'), plt.xticks([]), plt.yticks([])
-    # plt.subplot(1, 5, 5), plt.imshow(label_5.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-    # plt.title(f'Segmented Image when 5/{K}'), plt.xticks([]), plt.yticks([])
-    # plt.show()
-
-    cv2.imwrite(os.path.join(save_path, "cluster","best_label"+str(K)+"_"+image_name), label_3.reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.)
-
-    cv2.imwrite(os.path.join(save_path, "cluster","clustering_rgb_ed_"+str(K)+"_"+image_name), result_image_rgb)
-    cv2.imwrite(os.path.join(save_path, "rgb"+str(K)+"_"+image_name), rgb_img)
-
-    # gray
-    center_gray = np.uint8(center_gray)
-    res_gray = center_gray[label_gray.flatten()]
-    result_image_gray = res_gray.reshape(gray_img.shape)
-
-    cv2.imwrite(os.path.join(save_path, "cluster","clustering_gray_ed_"+str(K)+"_"+image_name), result_image_gray)
-    cv2.imwrite(os.path.join(save_path, "cluster","gray"+str(K)+"_"+image_name), gray_img)
-
-
-
-
-
-
-
-
 
 def blue_threshold(img):
 
@@ -210,3 +157,23 @@ if __name__ == "__main__":
     # blue_threshold(raw_90)
     cluster_k_means(gray_image_clone, rgb_image_clone)
 
+
+
+
+
+
+
+
+
+
+
+    # rgb_img = cv2.cvtColor(rgb_img, cv2.COLOR_BGR2RGB)
+    # r, g, b = cv2.split(rgb_img)
+    # r = r.flatten()
+    # g = g.flatten()
+    # b = b.flatten()
+    #
+    # fig = plt.figure()
+    # ax = Axes3D(fig)
+    # ax.scatter(r, g, b)
+    # plt.show()
