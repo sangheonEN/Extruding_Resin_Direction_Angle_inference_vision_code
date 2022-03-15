@@ -80,7 +80,7 @@ def his(img):
         plt.ylim([0, 20000])
         plt.savefig(os.path.join(save_path, "fig_"+image_name))
 
-def cluster_k_means(gray_img, rgb_img):
+def cluster_k_means(gray_img, rgb_img, img_name, visual_flag=False):
 
     x, y, w, h = 154, 446, 141, 570
     gray_img = gray_img[y: y+h, x:x+w]
@@ -106,7 +106,7 @@ def cluster_k_means(gray_img, rgb_img):
     cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER — stop the iteration when any of the above condition is met.
     
     """
-    K = 50
+    K = 10
     attempts = 10
 
     ret_rgb, label_rgb, center_rgb = cv2.kmeans(vectorized_rgb, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
@@ -117,16 +117,30 @@ def cluster_k_means(gray_img, rgb_img):
     res_rgb = center_rgb[label_rgb.flatten()]
     result_image_rgb = res_rgb.reshape(rgb_img.shape)
 
-    figure_size = 15
-    plt.figure(figsize=(figure_size, figure_size))
-    # each label image extract
-    for i in range(K):
-        globals()["label_{}".format(i+1)] = np.zeros(label_rgb.shape)
-        globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
-        globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
-        plt.subplot(1, K, i+1), plt.imshow(globals()["label_{}".format(i+1)])
-        plt.title(f'Segmented Image when {i+1}/{K}'), plt.xticks([]), plt.yticks([])
-    plt.show()
+    if visual_flag:
+
+        figure_size = 15
+        plt.figure(figsize=(figure_size, figure_size))
+        # each label image extract
+        for i in range(K):
+            globals()["label_{}".format(i+1)] = np.zeros(label_rgb.shape)
+            globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
+            globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
+            plt.subplot(1, K, i+1), plt.imshow(globals()["label_{}".format(i+1)])
+            plt.title(f'Segmented Image when {i+1}/{K}'), plt.xticks([]), plt.yticks([])
+        plt.show()
+
+    else:
+        for i in range(K):
+            globals()["label_{}".format(i+1)] = np.zeros(label_rgb.shape)
+            globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
+            globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
+
+        final_image = label_2 + label_3 + label_7
+
+        cv2.imwrite(os.path.join(save_path, "cluster_2","clustering_" + img_name), final_image)
+
+    print("zz")
 
 def blue_threshold(img):
 
@@ -140,22 +154,25 @@ def blue_threshold(img):
 
 if __name__ == "__main__":
 
-    # image load
-    raw_img = cv2.imread(os.path.join(image_path, image_name))
-    rgb_90 = cv2.rotate(raw_img, cv2.ROTATE_90_CLOCKWISE)
-    gray_img = cv2.cvtColor(raw_img, cv2.COLOR_BGR2GRAY)
-    gray_img_90 = cv2.rotate(gray_img, cv2.ROTATE_90_CLOCKWISE)
-    # image crop
-    gray_image_clone = gray_img_90.copy()
-    rgb_image_clone = rgb_90.copy()
+    img_path_list = os.listdir(image_path)
 
+    for img_name in img_path_list:
 
+        # image load
+        raw_img = cv2.imread(os.path.join(image_path, img_name))
 
-    # 실행 코드 함수 List
-    # binary_threshold_seg(image_clone, raw_90)
-    # his(raw_img)
-    # blue_threshold(raw_90)
-    cluster_k_means(gray_image_clone, rgb_image_clone)
+        rgb_90 = cv2.rotate(raw_img, cv2.ROTATE_90_CLOCKWISE)
+        gray_img = cv2.cvtColor(raw_img, cv2.COLOR_BGR2GRAY)
+        gray_img_90 = cv2.rotate(gray_img, cv2.ROTATE_90_CLOCKWISE)
+        # image crop
+        gray_image_clone = gray_img_90.copy()
+        rgb_image_clone = rgb_90.copy()
+
+        # 실행 코드 함수 List
+        # binary_threshold_seg(image_clone, raw_90)
+        # his(raw_img)
+        # blue_threshold(raw_90)
+        cluster_k_means(gray_image_clone, rgb_image_clone, img_name, visual_flag=True)
 
 
 
