@@ -12,11 +12,11 @@ import os
 import time
 
 # read the video from path
-video_name = "centering_coincidence.mp4"
+video_name = "front_04_04_17_03.avi"
 video_path = os.path.abspath(os.path.dirname(__file__))
 video_path = os.path.join(video_path, "video_data", video_name)
 print(video_path)
-save_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "binary_image")
+save_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data")
 
 cam = cv2.VideoCapture(video_path)
 
