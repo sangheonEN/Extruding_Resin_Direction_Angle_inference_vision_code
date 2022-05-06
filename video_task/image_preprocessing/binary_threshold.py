@@ -24,7 +24,7 @@ import numpy as np
 def onChange(pos):
     pass
 
-src = cv2.imread("./his_equalization/case1.png", cv2.IMREAD_GRAYSCALE)
+src = cv2.imread("./test_image/front_04_04_17_03_0954.png", cv2.IMREAD_GRAYSCALE)
 
 cv2.namedWindow("Trackbar Windows")
 

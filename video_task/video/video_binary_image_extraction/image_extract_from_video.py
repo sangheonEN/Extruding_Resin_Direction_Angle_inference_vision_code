@@ -12,7 +12,7 @@ import os
 import time
 
 # read the video from path
-video_name = "front_04_04_17_03.avi"
+video_name = "./Case_GT/top_04_04_17_03.avi"
 video_path = os.path.abspath(os.path.dirname(__file__))
 video_path = os.path.join(video_path, "video_data", video_name)
 print(video_path)
@@ -29,7 +29,7 @@ except Exception as e:
 
 current_framge = 0
 prev_time = 0
-FPS = 24 # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
+# FPS = 24 # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
 count = 1
 
 while(True):
