@@ -12,10 +12,12 @@ import os
 import time
 
 # read the video from path
-video_name = "./Case_GT/top_04_04_17_03.avi"
+video_name = "Case_GT/top_04_04_17_03.avi"
 video_path = os.path.abspath(os.path.dirname(__file__))
 video_path = os.path.join(video_path, "video_data", video_name)
 print(video_path)
+if not os.path.exists(os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data")):
+    os.makedirs(os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data"))
 save_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data")
 
 cam = cv2.VideoCapture(video_path)
@@ -44,7 +46,7 @@ while(True):
 
         prev_time = time.time()
 
-        cv2.imwrite(save_path+"/"+video_name.split(".")[0]+"_"+"%04d"%count+".png", frame)
+        cv2.imwrite(save_path+"/"+"%04d"%count+".png", frame)
         count += 1
 
     if (cam.get(cv2.CAP_PROP_POS_FRAMES) == cam.get(cv2.CAP_PROP_FRAME_COUNT)):
