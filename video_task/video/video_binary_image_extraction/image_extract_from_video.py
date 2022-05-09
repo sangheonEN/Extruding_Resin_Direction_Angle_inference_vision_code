@@ -12,7 +12,7 @@ import os
 import time
 
 # read the video from path
-video_name = "Case_GT/top_04_04_17_03.avi"
+video_name = "Case_8/top_04_04_15_28.avi"
 video_path = os.path.abspath(os.path.dirname(__file__))
 video_path = os.path.join(video_path, "video_data", video_name)
 print(video_path)
