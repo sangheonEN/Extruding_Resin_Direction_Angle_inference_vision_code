@@ -28,7 +28,7 @@ class EarlyStopping:
             self.save_checkpoint(val_loss, model, epoch, save_path)
             # log file save
             log = [epoch, val_loss]
-            with open(os.path.join(log_dir, 'log.csv'), 'a') as f:
+            with open(os.path.join(log_dir, 'train_log.csv'), 'a') as f:
                 log_1 = list(map(str, log))
                 f.write(','.join(log_1) + '\n')
 
@@ -62,7 +62,7 @@ class EarlyStopping:
         :param save_path: -
         """
         if self.improved_valid:
-            print(f"validation loss decreased {self.val_loss_min:.6f} --> {val_loss:.6f}. Saving Model")
+            print(f"epoch: {epoch} || validation loss decreased {self.val_loss_min:.6f} --> {val_loss:.6f}. Saving Model")
 
         torch.save(model, os.path.join(save_path, f"checkpoint.pth.tar"))
 
