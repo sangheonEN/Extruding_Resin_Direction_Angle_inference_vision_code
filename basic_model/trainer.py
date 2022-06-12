@@ -27,7 +27,7 @@ def train(input_train, target_train, input_val, target_val, args, device):
         print('==> loading existing model')
         model_info = torch.load(os.path.join(args.save_dir, 'checkpoint.pth.tar'))
         endtoendmodel.load_state_dict(model_info['state_dict'])
-        optimizer = torch.optim.Adam(model.parameters())
+        optimizer = torch.optim.Adam(endtoendmodel.parameters())
         optimizer.load_state_dict(model_info['optimizer'])
         cur_epoch = model_info['epoch'] + 1
     else:
@@ -102,7 +102,7 @@ def inference(input_test, target_test, args, device):
         print('==> loading existing model')
         model_info = torch.load(os.path.join(args.save_dir, 'checkpoint.pth.tar'))
         endtoendmodel.load_state_dict(model_info['state_dict'])
-        optimizer = torch.optim.Adam(model.parameters())
+        optimizer = torch.optim.Adam(endtoendmodel.parameters())
         optimizer.load_state_dict(model_info['optimizer'])
         cur_epoch = model_info['epoch'] + 1
     else:
