@@ -50,19 +50,27 @@ def camPreview(previewName, camID):
 
     while rval:
         cv2.imshow(previewName, frame)
+        # frame read
         rval, frame = cam.read()
         key = cv2.waitKey(1)
 
+        # save time now
         now = datetime.datetime.now().strftime("%d_%H-%M-%S")
 
-        # record 상태이고 video가 초기화되어 현재 진행되고 있는 video가 없을때!
-        # loop 돌면서 video에 영상이 저장된다.
+        """
+        1. 초기 record 변수 상태는 False 인데, r key를 누르는 순간 record = True 대입 (81 Line)
+        2. 다음 루프에서 record가 True되고 vide가 초기화된 상태일때! video 변수에 현재 frame video 객체를 저장한다.
+           - 이때 동시에 세 가지 cam을 저장하기 위해 threading.Thread 상속받은 클래스가 생성되니 동시에 3가지 thread에서 각기 다른 cam의 name을 주어 실행이 된다.
+        3. 그래서 video 객체에 세 가지 Tread를 이용해서 세 가지 cam의 frame을 read 할 수 있다.
+        4. 또한 video.write로 video가 -1로 초기화된 상태가 아닐때 계속 write하게 코드를 구현했다. (96 Line)
+        5. 그리고 e key를 누르는 순간 record = False로 대입되고 video.release() 가 되어 video record는 종료되고 다시 video 변수를 -1로 초기화 해준다. (85 Line, 74 Line)
+        6. 초기화된 상태에서 계속 loop를 돌다가 r key를 누르는 순간 다시 record = True 대입되고 위의 절차를 반복한다.
+        """
+
         if (record == True and video == -1):
-            #recode -> video parameters: save name, video format code, fps, (frame height, frame width)
+            # cv2.VideoWriter parameters: save name, video format code, fps, (frame height, frame width)
             video = cv2.VideoWriter(os.path.join(base_path,previewName+"_"+str(now)+".avi"), fourcc, 10.0, (frame.shape[1], frame.shape[0]))
 
-        # video 객체에 영상이 저장된 정보가 있고 지금 record가 끝났으니 release()하여 file 저장하고 녹화를 중단한다.
-        # 그리고 다시 video를 -1로 초기화하여 다시 record가 on 상태일때 video가 초기화된 데이터로 input되게 -1로 초기화함.
         if (record == False and video != -1):
             video.release()
             video = -1

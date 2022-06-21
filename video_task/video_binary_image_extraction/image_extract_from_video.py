@@ -1,6 +1,6 @@
 """
 
-1. Video load
+1. Video load. fps of camera.
 
 2. Each frame binary image extraction
 
@@ -31,7 +31,6 @@ except Exception as e:
 
 current_framge = 0
 prev_time = 0
-# FPS = 24 # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
 count = 1
 
 while(True):
@@ -39,19 +38,18 @@ while(True):
     rval, frame = cam.read()
     key = cv2.waitKey()
 
-    # FPS 계산하기 위해 초기 시간 저장.
     current_time = time.time() - prev_time
 
-    if (rval): # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
+    if (rval):
 
         prev_time = time.time()
 
         cv2.imwrite(save_path+"/"+"%04d"%count+".png", frame)
         count += 1
 
-    if (cam.get(cv2.CAP_PROP_POS_FRAMES) == cam.get(cv2.CAP_PROP_FRAME_COUNT)):
+    # frame 동영상의 현재 프레임 수(cv2.CAP_PROP_POS_FRAMES)와 동영상의 총 프레임 수(cv2.CAP_PROP_FRAME_COUNT) 가 같으면 break
+    if (cam.get(cv2.CAP_PROP_POS_FRAMES) == cam.get(cv2.CAP_PROP_FRAME_COUNT)): 
         break
-
 
     if key == 27:
         break
