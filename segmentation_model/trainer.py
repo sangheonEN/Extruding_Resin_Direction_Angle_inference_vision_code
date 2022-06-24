@@ -30,7 +30,7 @@ class solver(object):
         if opts.mode == 'trainval':
             optim_module = import_module('models.{}.helpers'.format(
                 opts.backbone))
-            self.optim = optim_module.prepare_optim(opts, self.model)
+            self.optim, self.scheduler = optim_module.prepare_optim(opts, self.model)
 
         self.model.to(opts.cuda)
 
@@ -102,6 +102,7 @@ class Trainer(solver):
 
     def validate(self):
         training = self.model.training
+        # model.eval() 을 호출하여 드롭아웃 및 배치 정규화를 평가 모드로 설정
         self.model.eval()
 
         n_class = len(self.val_loader.dataset.class_names)
@@ -165,6 +166,7 @@ class Trainer(solver):
                 'best_mean_iu': self.best_mean_iu,
             }, osp.join(self.out, 'checkpoint.pth.tar'))
         if is_best:
+            # best model name: model_best.pth.tar copy
             shutil.copy(osp.join(self.out, 'checkpoint.pth.tar'),
                         osp.join(self.out, 'model_best.pth.tar'))
 
@@ -194,12 +196,9 @@ class Trainer(solver):
 
             assert self.model.training
 
-            # train data augmentation
-            data, target = utils.augmentation_train(data, target)
             data, target = data.to(self.cuda), target.to(self.cuda)
 
             # optimization
-            self.optim.zero_grad()
             score = self.model(data)
 
             # loss function
@@ -207,8 +206,11 @@ class Trainer(solver):
             loss /= len(data)
             if np.isnan(float(loss.item())):
                 raise ValueError('loss is nan while training')
+
+            self.optim.zero_grad()
             loss.backward()
             self.optim.step()
+            self.scheduler.step()
 
             # Segmentation metrics calculation
             metrics = []

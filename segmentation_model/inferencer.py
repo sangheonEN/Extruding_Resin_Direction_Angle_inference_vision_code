@@ -15,18 +15,18 @@ class solver_inf(object):
         if opts.model == "deeplabv3":
             model_module = import_module('models.{}.deeplabv3_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.Deeplabv3(n_class=21)
+            self.model = model_module.Deeplabv3(n_class=2)
         else:
             model_module = import_module('models.{}.fcn_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.FCN(n_class=21)
+            self.model = model_module.FCN(n_class=2)
 
         self.model.resume(opts.resume, test=opts.mode in ['inference'])
         self.model.to(opts.cuda)
 
-class Inference(solver_inf):
+class Inference_f(solver_inf):
     def __init__(self, test_data_loader, opts):
-        super(Inference, self).__init__(test_data_loader, opts)
+        super(Inference_f, self).__init__(test_data_loader, opts)
         self.cuda = opts.cuda
         self.opts = opts
         self.test_data_loader = test_data_loader

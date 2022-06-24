@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import DataLoader
 from utils import get_config, get_log_dir, get_cuda
 from data_loader import *
-from inference_utils import Inference
+from inferencer import Inference_f
 import argparse
 import warnings
 warnings.filterwarnings('ignore')
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--gpu_id", type=int, default=0)
     parser.add_argument("--backbone", type=str, default='resnet')
     parser.add_argument("--model", type=str, default='fcn', choices=['fcn', 'deeplabv3'])
-    parser.add_argument("--resume", type=str, default='', help='model saver path')
+    parser.add_argument("--resume", type=str, default='./save_ckpt', help='model saver path')
     parser.add_argument("--backbone_layer", type=str, default='101', choices=['50', '101'])
     opts = parser.parse_args()
 
@@ -56,11 +56,11 @@ if __name__ == "__main__":
     test_input_list, test_mask_list = data_sort_list(test_input_path, test_mask_path)
 
     test_data = CustomImageDataset(test_input_list, test_mask_list, test_input_path, test_mask_path,
-                                   is_train_data=False, resize=resize_data, transform=transform)
+                                   is_train_data=False)
 
     test_dataloader = DataLoader(test_data, batch_size=3, shuffle=False)
 
-    inference = Inference(test_dataloader, opts)
+    inference = Inference_f(test_dataloader, opts)
 
     inference.Test()
 

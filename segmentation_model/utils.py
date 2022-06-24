@@ -6,6 +6,22 @@ import cv2
 import yaml
 import albumentations as A
 
+
+def data_sort_list(input_path, mask_path):
+
+    sort_function = lambda f: int(''.join(filter(str.isdigit, f)))
+
+    input_list = os.listdir(input_path)
+    input_list = [file for file in input_list if file.endswith("png")]
+    input_list.sort(key=sort_function)
+
+    mask_list = os.listdir(mask_path)
+    mask_list = [file for file in mask_list if file.endswith('png')]
+    mask_list.sort(key=sort_function)
+
+    return input_list, mask_list
+
+
 def get_log_dir(model_name, cfg):
 
     name = 'MODEL-%s' % (model_name)
@@ -78,43 +94,43 @@ def label_accuracy_score(label_trues, label_preds, n_class):
     return acc, acc_cls, mean_iu, fwavacc
 
 
-def augmentation_train(inputs_train_feed, masks_train_feed):
-    # torch tensor operation기준인 input shape이 (batch, channel, height, width)로 들어오니
-    # 이걸 augmentation 하기위해서는 (batch, height, width, channel)로 변환 필요.
-    inputs_train_feed = np.array(inputs_train_feed).transpose(0, 2, 3, 1)
-    masks_train_feed = np.array(masks_train_feed).transpose(0, 2, 3, 1)
-
-    mean_resnet = np.array([0.485, 0.456, 0.406])
-    std_resnet = np.array([0.229, 0.224, 0.225])
-
-    transform = A.Compose([
-        A.RandomRotate90(p=0.5),
-        A.HorizontalFlip(p=0.5),
-        A.VerticalFlip(p=0.5)
-    ])
-
-    iter_num = inputs_train_feed.shape[0]
-
-    inputs_list = list()
-    masks_list = list()
-
-    for i in range(iter_num):
-        transformed = transform(image=inputs_train_feed[i], mask=masks_train_feed[i])
-        input = transformed["image"]
-        mask = transformed["mask"]
-        input /= 255.
-        # mask_ = mask / 255
-        input -= mean_resnet
-        input /= std_resnet
-
-        inputs_list.append(input)
-        masks_list.append(mask)
-
-    # torch tensor operation기준인 input shape(batch, channel, height, width)으로 다시 변환.
-    img = np.array(inputs_list, dtype=np.float32).transpose(0, 3, 1, 2)
-    lbl = np.array(masks_list, dtype=np.int32).transpose(0, 3, 1, 2)
-
-    img = torch.from_numpy(img.copy()).float()
-    lbl = torch.from_numpy(lbl.copy()).long()
-
-    return img, lbl
+# def augmentation_train(inputs_train_feed, masks_train_feed):
+#     # torch tensor operation기준인 input shape이 (batch, channel, height, width)로 들어오니
+#     # 이걸 augmentation 하기위해서는 (batch, height, width, channel)로 변환 필요.
+#     inputs_train_feed = np.array(inputs_train_feed).transpose(0, 2, 3, 1)
+#     masks_train_feed = np.array(masks_train_feed).transpose(0, 2, 3, 1)
+#
+#     mean_resnet = np.array([0.485, 0.456, 0.406])
+#     std_resnet = np.array([0.229, 0.224, 0.225])
+#
+#     transform = A.Compose([
+#         A.RandomRotate90(p=0.5),
+#         A.HorizontalFlip(p=0.5),
+#         A.VerticalFlip(p=0.5)
+#     ])
+#
+#     iter_num = inputs_train_feed.shape[0]
+#
+#     inputs_list = list()
+#     masks_list = list()
+#
+#     for i in range(iter_num):
+#         transformed = transform(image=inputs_train_feed[i], mask=masks_train_feed[i])
+#         input = transformed["image"]
+#         mask = transformed["mask"]
+#         input /= 255.
+#         # mask_ = mask / 255
+#         input -= mean_resnet
+#         input /= std_resnet
+#
+#         inputs_list.append(input)
+#         masks_list.append(mask)
+#
+#     # torch tensor operation기준인 input shape(batch, channel, height, width)으로 다시 변환.
+#     img = np.array(inputs_list, dtype=np.float32).transpose(0, 3, 1, 2)
+#     lbl = np.array(masks_list, dtype=np.int32).transpose(0, 3, 1, 2)
+#
+#     img = torch.from_numpy(img.copy()).float()
+#     lbl = torch.from_numpy(lbl.copy()).long()
+#
+#     return img, lbl

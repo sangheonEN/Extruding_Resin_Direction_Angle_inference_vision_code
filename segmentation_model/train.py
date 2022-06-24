@@ -1,7 +1,7 @@
 import os
 import torch
 from torch.utils.data import DataLoader
-from utils import get_config, get_log_dir, get_cuda
+from utils import get_config, get_log_dir, get_cuda, data_sort_list
 from data_loader import *
 from trainer import Trainer
 import argparse
@@ -13,20 +13,6 @@ train_mask_path = './datasets/VOCdata/train/mask_data'
 validation_input_path = './datasets/VOCdata/val/input_data'
 validation_mask_path = './datasets/VOCdata/val/mask_data'
 
-def data_sort_list(input_path, mask_path):
-
-    sort_function = lambda f: int(''.join(filter(str.isdigit, f)))
-
-    input_list = os.listdir(input_path)
-    input_list = [file for file in input_list if file.endswith("png")]
-    input_list.sort(key=sort_function)
-
-    mask_list = os.listdir(mask_path)
-    mask_list = [file for file in mask_list if file.endswith('png')]
-    mask_list.sort(key=sort_function)
-
-    return input_list, mask_list
-
 
 if __name__ == "__main__":
 
@@ -37,8 +23,13 @@ if __name__ == "__main__":
     parser.add_argument("--gpu_id", type=int, default=0)
     parser.add_argument("--backbone", type=str, default='resnet')
     parser.add_argument("--model", type=str, default='fcn', choices=['fcn', 'deeplabv3'])
-    parser.add_argument("--resume", type=str, default='', help='model saver path')
+    parser.add_argument("--resume", type=str, default='',
+                        help='model saver path opts.out에서 log dir을 만들고 거기에 모델 결과 log와 ckpt 파일(the last and best model)이 저장된다'
+                             'inference 상태일때 저장된 best model의 file path를 입력하면 best model을 load함.'
+                             'train, val 상태일때 the last model의 file path를 입력하면 the last model을 load해서 연속적인 학습가능.')
     parser.add_argument("--backbone_layer", type=str, default='101', choices=['50', '101'])
+    parser.add_argument("--optim", type=str, default='adam', choices=['adam', 'sgd'])
+    parser.add_argument("--lr_scheduler", type=str, default='CosineAnnealingWarmRestarts', choices=['steplr', 'CosineAnnealingWarmRestarts', 'LambdaLR'])
     opts = parser.parse_args()
 
     # os.environ['CUDA_VISIBLE_DEVICES'] = str(opts.gpu_id)
