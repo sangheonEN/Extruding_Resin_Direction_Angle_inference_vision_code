@@ -7,7 +7,7 @@ class Deeplabv3(nn.Module):
 
         self.n_class = n_class
         super(Deeplabv3, self).__init__()
-        self.deeplabv3 = deeplabv3_resnet50(pretrained=False, num_classes=self.n_class)
+        self.deeplabv3 = deeplabv3_resnet50(pretrained=True, num_classes=self.n_class)
 
     def forward(self, x, debug=False):
         return self.deeplabv3(x)['out']

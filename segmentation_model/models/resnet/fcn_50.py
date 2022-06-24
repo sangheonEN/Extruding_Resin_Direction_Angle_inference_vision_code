@@ -7,7 +7,7 @@ class FCN(nn.Module):
 
         self.n_class = n_class
         super(FCN, self).__init__()
-        self.fcn = fcn_resnet50(pretrained=False, num_classes=self.n_class)
+        self.fcn = fcn_resnet50(pretrained=True, num_classes=self.n_class)
 
     def forward(self, x, debug=False):
         return self.fcn(x)['out']

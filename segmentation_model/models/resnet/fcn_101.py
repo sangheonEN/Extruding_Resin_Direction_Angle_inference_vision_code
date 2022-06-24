@@ -6,7 +6,7 @@ class FCN(nn.Module):
     def __init__(self, n_class=21):
 
         super(FCN, self).__init__()
-        self.fcn = fcn_resnet101(pretrained=False, num_classes=2)
+        self.fcn = fcn_resnet101(pretrained=True, num_classes=2)
         # Uses bilinear interpolation for upsampling
         # https://github.com/pytorch/vision/blob/master/
         # torchvision/models/segmentation/_utils.py
