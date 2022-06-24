@@ -20,6 +20,7 @@ def data_sort_list(input_path, mask_path):
     input_list = os.listdir(input_path)
     input_list = [file for file in input_list if file.endswith("png")]
     input_list.sort(key=sort_function)
+
     mask_list = os.listdir(mask_path)
     mask_list = [file for file in mask_list if file.endswith('png')]
     mask_list.sort(key=sort_function)
@@ -60,9 +61,9 @@ if __name__ == "__main__":
     val_input_list, val_mask_list = data_sort_list(validation_input_path, validation_mask_path)
 
     training_data = CustomImageDataset(train_input_list, train_mask_list, train_input_path, train_mask_path,
-                                       is_train_data=True, resize=resize_data, transform=transform)
+                                       is_train_data=True)
     validation_data = CustomImageDataset(val_input_list, val_mask_list, validation_input_path, validation_mask_path,
-                                         is_train_data=False, resize=resize_data, transform=transform)
+                                         is_train_data=False)
 
     train_dataloader = DataLoader(training_data, batch_size=3, shuffle=True)
     valid_dataloader = DataLoader(validation_data, batch_size=3, shuffle=False)

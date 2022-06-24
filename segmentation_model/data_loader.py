@@ -32,28 +32,35 @@ VOC_COLORMAP = [
 
 class CustomImageDataset(Dataset):
 
+
+    def __init__(self, img_list, mask_list, img_path, mask_path, is_train_data = False):
+        self.img_list = img_list
+        self.mask_list = mask_list
+        self.img_path = img_path
+        self.mask_path = mask_path
+        self.is_train_data = is_train_data
+
+    def __len__(self):
+        return len(self.img_list)
+
+    def __getitem__(self, idx):
+        image = cv2.imread(os.path.join(self.img_path, self.img_list[idx]))
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mask = cv2.imread(os.path.join(self.mask_path, self.mask_list[idx]), cv2.IMREAD_GRAYSCALE)
+        mask = np.expand_dims(mask, -1)
+
+        if self.transform is not None:
+            image, mask = self.transform(image, mask, self.is_train_data)
+
+        image, mask = self.augmentation_f(image, mask)
+
+        return image, mask
+
+
+
     class_names = np.array([
         'background',
-        'aeroplane',
-        'bicycle',
-        'bird',
-        'boat',
-        'bottle',
-        'bus',
-        'car',
-        'cat',
-        'chair',
-        'cow',
-        'diningtable',
-        'dog',
-        'horse',
-        'motorbike',
-        'person',
-        'potted plant',
-        'sheep',
-        'sofa',
-        'train',
-        'tv/monitor',
+        'object'
     ])
 
     def decode_segmap(self, label_mask, plot=False):
@@ -124,69 +131,46 @@ class CustomImageDataset(Dataset):
 
         return img, lbl
 
-    def __init__(self, img_list, mask_list, img_path, mask_path, is_train_data = False, resize=None, transform=None):
-        self.img_list = img_list
-        self.mask_list = mask_list
-        self.img_path = img_path
-        self.mask_path = mask_path
-        self.transform = transform
-        self.resize = resize
-        self.is_train_data = is_train_data
+    def transform(self, img, lbl, _is_train):
+        # train is done separately in transform. see utils.py
+        if _is_train == False:
+            mean_resnet = np.array([0.485, 0.456, 0.406])
+            std_resnet = np.array([0.229, 0.224, 0.225])
 
-    def __len__(self):
-        return len(self.img_list)
+            img = np.array(img, dtype=np.float64)
+            img /= 255.
+            lbl = np.array(lbl, dtype=np.float64)
+            # lbl /= 255
+            img -= mean_resnet
+            img /= std_resnet
+            return img, lbl
 
-    def __getitem__(self, idx):
-        image = cv2.imread(os.path.join(self.img_path, self.img_list[idx]))
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        mask = cv2.imread(os.path.join(self.mask_path, self.mask_list[idx]))
-        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-        mask = self._convert_to_segmentation_mask(mask)
-        mask = np.expand_dims(mask, -1)
+        else:
+            return img, lbl
 
-        if self.transform is not None:
-            image, mask = self.transform(image, mask, self.is_train_data)
+    def augmentation_f(self, inputs_train_feed, masks_train_feed):
+        # augmentation
+        """
+        resize ratio : N : M
+        """
+        transform = A.Compose([
+            A.Resize(1024, 1024),
+            A.RandomRotate90(p=0.5),
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5)
+        ])
 
-        image, mask = self.resize(image, mask)
+        transformed = transform(image=inputs_train_feed, mask=masks_train_feed)
 
-        return image, mask
+        img = transformed["image"]
+        lbl = transformed["mask"]
 
-def transform(img, lbl, _is_train):
-    # train is done separately in transform. see utils.py
-    if _is_train == False:
-        mean_resnet = np.array([0.485, 0.456, 0.406])
-        std_resnet = np.array([0.229, 0.224, 0.225])
+        img = img.transpose(2, 0, 1)  # mask 는 h, w shape이니까 필요 없음??
+        lbl = lbl.transpose(2, 0, 1)  # mask 는 h, w shape이니까 필요 없음??
+        img = torch.from_numpy(img.copy()).float()
+        lbl = torch.from_numpy(lbl.copy()).long()
 
-        img = np.array(img, dtype=np.float64)
-        img /= 255.
-        lbl = np.array(lbl, dtype=np.float64)
-        # lbl /= 255
-        img -= mean_resnet
-        img /= std_resnet
         return img, lbl
-
-    else:
-        return img, lbl
-
-def resize_data(inputs_train_feed, masks_train_feed):
-    # augmentation
-    transform = A.Compose([
-        A.Resize(1024, 1024)
-    ])
-
-    transformed = transform(image=inputs_train_feed, mask=masks_train_feed)
-
-    img = transformed["image"]
-    lbl = transformed["mask"]
-
-    img = img.transpose(2, 0, 1) # mask 는 h, w shape이니까 필요 없음??
-    lbl = lbl.transpose(2, 0, 1) # mask 는 h, w shape이니까 필요 없음??
-    img = torch.from_numpy(img.copy()).float()
-    lbl = torch.from_numpy(lbl.copy()).long()
-
-    return img, lbl
-
-
 
 
 

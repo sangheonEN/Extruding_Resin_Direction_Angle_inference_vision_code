@@ -19,11 +19,11 @@ class solver(object):
         if opts.model == "deeplabv3":
             model_module = import_module('models.{}.deeplabv3_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.Deeplabv3(n_class=21)
+            self.model = model_module.Deeplabv3(n_class=2)
         else:
             model_module = import_module('models.{}.fcn_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.FCN(n_class=21)
+            self.model = model_module.FCN(n_class=2)
 
         self.model.resume(opts.resume, test=opts.mode in ['inference'])
 
