@@ -162,41 +162,91 @@ class Binary_proc:
         self.img_path = img_path
         self.saver_path = saver_path
 
-    def binary_threshold_seg(self, img_n):
 
-        img = cv2.imread(os.path.join(self.img_path, img_n))
+    def sobel_oper(self, img_n):
+
+        # x, y, w, h = 300, 265, 674, 588
+
+        img = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_COLOR)
+        img = cv2.GaussianBlur(img, (3, 3), 0)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # crop = gray[y: y+h, x:x+w]
 
-        x, y, w, h = 300, 265, 674, 588
-        crop = gray[y: y+h, x:x+w]
+        grad_x = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=1, dy=0, ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
 
-        # image GaussianBlur
-        blur = cv2.GaussianBlur(crop,(5,5),0)
+        grad_y = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=0, dy=1, ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
+
+        abs_grad_x = cv2.convertScaleAbs(grad_x)
+        abs_grad_y = cv2.convertScaleAbs(grad_y)
+
+        grad = cv2.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
+
+        if not os.path.exists(os.path.join(self.saver_path, "sobel")):
+            os.makedirs(os.path.join(self.saver_path, "sobel"))
+
+        cv2.imwrite(os.path.join(self.saver_path, 'sobel', "sobel_"+img_n), grad)
+
+
+    def canny(self, img_n):
+
+        img = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_COLOR)
+
+        # x, y, w, h = 300, 265, 674, 588
+        # crop = gray[y: y+h, x:x+w]
+
+        blur = cv2.GaussianBlur(img,(5,5),0)
+
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+
+        edges = cv2.Canny(gray, 30, 70)
+
+        if not os.path.exists(os.path.join(self.saver_path, "canny")):
+            os.makedirs(os.path.join(self.saver_path, "canny"))
+
+        cv2.imwrite(os.path.join(self.saver_path, 'canny', "canny_"+img_n), edges)
+
+
+    def sharpening(self, img_n):
+
+        img = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_COLOR)
+
+        # x, y, w, h = 300, 265, 674, 588
+        # crop = gray[y: y+h, x:x+w]
+
+        blur = cv2.GaussianBlur(img,(5,5),0)
+
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
         # sharpening filter
         sharpening_mask1 = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
         sharpening_mask2 = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
 
-        sharpening1_img = cv2.filter2D(crop, -1, sharpening_mask1)
-        sharpening2_img = cv2.filter2D(crop, -1, sharpening_mask2)
-
-        """
-        above filter
-        below threshold method
-        """
-
-        # otsu threshold binary
-        ret, blur_img_binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        sharpening1_img = cv2.filter2D(gray, -1, sharpening_mask1)
+        sharpening2_img = cv2.filter2D(gray, -1, sharpening_mask2)
 
         ret, sharp1_img_binary = cv2.threshold(sharpening1_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
         ret, sharp2_img_binary = cv2.threshold(sharpening2_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
-        # canny edge detection
-        edges = cv2.Canny(crop, 30, 70)
+        if not os.path.exists(os.path.join(self.saver_path, "sharpening")):
+            os.makedirs(os.path.join(self.saver_path, "sharpening"))
 
-        # distance transform
-        dist_trans = cv2.distanceTransform(crop, cv2.DIST_L2, 0)
-        dist_trans = cv2.normalize(dist_trans, dist_trans, 0, 1.0, cv2.NORM_MINMAX)
+        cv2.imwrite(os.path.join(self.saver_path, "sharpening", "sharp1_"+img_n), sharp1_img_binary)
+        cv2.imwrite(os.path.join(self.saver_path, "sharpening", "sharp2_"+img_n), sharp2_img_binary)
+
+
+    def hougn(self, img_n):
+
+        img = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_COLOR)
+
+        # x, y, w, h = 300, 265, 674, 588
+        # crop = gray[y: y+h, x:x+w]
+
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
+
+        gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
+
+        ret, blur_img_binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+
 
         # Hough Transform
         minLineLength = 100
@@ -206,17 +256,73 @@ class Binary_proc:
 
         for x in range(0, len(lines)):
             for x1, y1, x2, y2 in lines[x]:
-                cv2.line(crop, (x1, y1), (x2, y2), (0, 128, 0), 2)
+                cv2.line(gray, (x1, y1), (x2, y2), (0, 128, 0), 2)
+
+        if not os.path.exists(os.path.join(self.saver_path, "hougn")):
+            os.makedirs(os.path.join(self.saver_path, "hougn"))
+
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_"+img_n), gray)
 
 
-        # image save
-        cv2.imwrite(os.path.join(self.saver_path, "otsu_blur_"+img_n), blur_img_binary)
-        cv2.imwrite(os.path.join(self.saver_path, "otsu_sharp1_"+img_n), sharp1_img_binary)
-        cv2.imwrite(os.path.join(self.saver_path, "otsu_sharp2_"+img_n), sharp2_img_binary)
-        cv2.imwrite(os.path.join(self.saver_path, "canny_"+img_n), edges)
-        cv2.imwrite(os.path.join(self.saver_path, "distance_transform_"+img_n), dist_trans)
-        cv2.imwrite(os.path.join(self.saver_path, "blur_"+img_n), blur)
-        cv2.imwrite(os.path.join(self.saver_path, "hough_"+img_n), crop)
+    # def binary_threshold_seg(self, img_n):
+    #
+    #     img = cv2.imread(os.path.join(self.img_path, img_n))
+    #     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #
+    #     x, y, w, h = 300, 265, 674, 588
+    #     crop = gray[y: y+h, x:x+w]
+    #
+    #     # image GaussianBlur
+    #     blur = cv2.GaussianBlur(crop,(5,5),0)
+    #
+    #     # sharpening filter
+    #     sharpening_mask1 = np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]])
+    #     sharpening_mask2 = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+    #
+    #     sharpening1_img = cv2.filter2D(crop, -1, sharpening_mask1)
+    #     sharpening2_img = cv2.filter2D(crop, -1, sharpening_mask2)
+    #
+    #     """
+    #     above filter
+    #     below threshold method
+    #     """
+    #
+    #     # otsu threshold binary
+    #     ret, blur_img_binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    #
+    #     ret, sharp1_img_binary = cv2.threshold(sharpening1_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    #     ret, sharp2_img_binary = cv2.threshold(sharpening2_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+    #
+    #     # canny edge detection
+    #     edges = cv2.Canny(crop, 30, 70)
+    #
+    #     # # distance transform
+    #     # dist_trans = cv2.distanceTransform(crop, cv2.DIST_L2, 0)
+    #     # dist_trans = cv2.normalize(dist_trans, dist_trans, 0, 1.0, cv2.NORM_MINMAX)
+    #
+    #     # Hough Transform
+    #     minLineLength = 100
+    #     maxLineGap = 1
+    #
+    #     lines = cv2.HoughLinesP(blur_img_binary, 1, np.pi / 180, 15, minLineLength, maxLineGap)
+    #
+    #     for x in range(0, len(lines)):
+    #         for x1, y1, x2, y2 in lines[x]:
+    #             cv2.line(crop, (x1, y1), (x2, y2), (0, 128, 0), 2)
+    #
+    #     if not os.path.exists(os.path.join(self.saver_path, "otsu_blur")):
+    #         os.makedirs(os.path.join(self.saver_path, "otsu_blur"))
+    #         os.makedirs(os.path.join(self.saver_path, "otsu_sharp1"))
+    #         os.makedirs(os.path.join(self.saver_path, "otsu_sharp2"))
+    #         os.makedirs(os.path.join(self.saver_path, "canny"))
+    #         os.makedirs(os.path.join(self.saver_path, "hough"))
+    #
+    #     # image save
+    #     cv2.imwrite(os.path.join(self.saver_path, "otsu_blur_"+img_n), blur_img_binary)
+    #     cv2.imwrite(os.path.join(self.saver_path, "otsu_sharp1_"+img_n), sharp1_img_binary)
+    #     cv2.imwrite(os.path.join(self.saver_path, "otsu_sharp2_"+img_n), sharp2_img_binary)
+    #     cv2.imwrite(os.path.join(self.saver_path, "canny_"+img_n), edges)
+    #     cv2.imwrite(os.path.join(self.saver_path, "hough_"+img_n), crop)
 
 
     def proc(self):
@@ -224,7 +330,10 @@ class Binary_proc:
 
             for img_name in self.img_name_list:
 
-                self.binary_threshold_seg(img_name)
+                self.canny(img_name)
+                self.sharpening(img_name)
+                self.hougn(img_name)
+                self.sobel_oper(img_name)
 
         except Exception as e:
             print(f"Error Discript: {e}")
@@ -296,10 +405,34 @@ class Kmeans_cluster:
                 globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
                 globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
 
-            # final_image = label_2 + label_3 + label_7
-            final_image = label_7 + label_9 + label_10
+            k1_image = label_1
+            k2_image = label_2
+            k3_image = label_3
+            k4_image = label_4
+            k5_image = label_5
+            k6_image = label_6
+            k7_image = label_7
+            k8_image = label_8
+            k9_image = label_9
+            k10_image = label_10
+            final_image = label_7 + label_8 + label_10
 
-            cv2.imwrite(os.path.join(self.saver_path, "clustering_" + img_n), final_image)
+            # final_image = label_7 + label_9 + label_10
+
+            if not os.path.exists(os.path.join(self.saver_path, "clustering")):
+                os.makedirs(os.path.join(self.saver_path, "clustering"))
+
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{1}_" + img_n), k1_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{2}_" + img_n), k2_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{3}_" + img_n), k3_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{4}_" + img_n), k4_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{5}_" + img_n), k5_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{6}_" + img_n), k6_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{7}_" + img_n), k7_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{8}_" + img_n), k8_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{9}_" + img_n), k9_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{10}_" + img_n), k10_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_final_" + img_n), final_image)
 
 
     def proc(self):
@@ -490,11 +623,11 @@ if __name__ == "__main__":
 
     # # image_path, image_list, save_path
 
-    kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
     # binary_proc = Binary_proc(img_list, img_path, saver_path)
-
-    kmeans_cluster_1.proc()
     # binary_proc.proc()
+
+    kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
+    kmeans_cluster_1.proc()
 
 
     print("End Processing")
