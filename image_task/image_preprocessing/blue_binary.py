@@ -174,6 +174,12 @@ def angle_f(eigenvector):
 
 if __name__ == "__main__":
 
+    """
+    1. Kapur threshold finder
+    2. Max area contours select
+    3. Find Angle FCA points
+    """
+
     base_path = os.path.abspath(os.path.dirname("__file__"))
 
     if not os.path.exists(os.path.join(base_path, 'after_processing')):
