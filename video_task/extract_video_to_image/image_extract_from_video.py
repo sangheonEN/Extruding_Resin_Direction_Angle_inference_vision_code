@@ -1,6 +1,6 @@
 """
 
-1. Video load. fps of camera.
+1. Video load
 
 2. Each frame binary image extraction
 
@@ -10,49 +10,69 @@
 import cv2
 import os
 import time
+import numpy as np
+
+
+
 
 # read the video from path
-video_name = "Case_8/top_04_04_15_28.avi"
 video_path = os.path.abspath(os.path.dirname(__file__))
-video_path = os.path.join(video_path, "video_data", video_name)
-print(video_path)
+video_case_list = os.listdir(os.path.join(video_path, "video_data"))
+
+# save image_file
 if not os.path.exists(os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data")):
     os.makedirs(os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data"))
 save_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "image_data")
 
-cam = cv2.VideoCapture(video_path)
+for case_file in video_case_list:
+    video_file_path = os.path.join(video_path, 'video_data', case_file)
+    video_file_list = os.listdir(video_file_path)
+    video_file_list = [file for file in video_file_list if file.endswith('avi')]
+    
+    for video_file in video_file_list:
+        video_folder_path = os.path.join(video_file_path, video_file)
 
-try:
-    if not os.path.exists("binary_image"):
-        os.makedirs("binary_image")
+        cam = cv2.VideoCapture(video_folder_path)
 
-except Exception as e:
-    print(e)
+        try:
+            if not os.path.exists(os.path.join(save_path, case_file)):
+                os.makedirs(os.path.join(save_path, case_file))
+            
+            if not os.path.exists(os.path.join(save_path, case_file, video_file.split('_')[0])):
+                os.makedirs(os.path.join(save_path, case_file, video_file.split('_')[0]))
+        
+        except Exception as e:
+            print(e)
 
-current_framge = 0
-prev_time = 0
-count = 1
 
-while(True):
+        save_file = os.path.join(save_path, case_file, video_file.split('_')[0])
 
-    rval, frame = cam.read()
-    key = cv2.waitKey()
+        current_framge = 0
+        prev_time = 0
+        # FPS = 24 # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
+        count = 0
 
-    current_time = time.time() - prev_time
+        while(True):
 
-    if (rval):
+            rval, frame = cam.read()
+            key = cv2.waitKey()
 
-        prev_time = time.time()
+            # FPS 계산하기 위해 초기 시간 저장.
+            current_time = time.time() - prev_time
 
-        cv2.imwrite(save_path+"/"+"%04d"%count+".png", frame)
-        count += 1
+            if (rval): # 영상 취득할때 사용한 카메라 프레임 FPS랑 맞춰야함.
 
-    # frame 동영상의 현재 프레임 수(cv2.CAP_PROP_POS_FRAMES)와 동영상의 총 프레임 수(cv2.CAP_PROP_FRAME_COUNT) 가 같으면 break
-    if (cam.get(cv2.CAP_PROP_POS_FRAMES) == cam.get(cv2.CAP_PROP_FRAME_COUNT)): 
-        break
+                prev_time = time.time()
 
-    if key == 27:
-        break
+                cv2.imwrite(save_file+"/"+"%04d"%count+".png", frame)
+                count += 1
+
+            if (cam.get(cv2.CAP_PROP_POS_FRAMES) == cam.get(cv2.CAP_PROP_FRAME_COUNT)):
+                break
+
+
+            if key == 27:
+                break
 
 
 
