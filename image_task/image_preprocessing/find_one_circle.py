@@ -2,9 +2,11 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
-import tensorflow as tf
+# import tensorflow as tf
+import math
+import scipy
 
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 
 def gauss_newton():
@@ -19,7 +21,7 @@ def gauss_newton():
 
 def using_three_points(): 
     """
-    곡선의 시작, 중점, 끝점을 추출하여 세 점을 이용해서 원 파라미터를 구함. 
+    곡선의 시작, 중점, 끝점을 추출하여 세 점을 이용해서 원 파라미터를 구함.  http://heilow.egloos.com/v/418569
     input (x1, y1), (x2, y2), (x3, y3)
     output cx, cy, r
     _summary_
@@ -29,12 +31,39 @@ def using_three_points():
         @param * psCenterPoint:  세점들의 좌표
         @return Error code
     """
+    
+    # sympy나 scipy
+    
     x = [2, 5, 10]
     y = [5, 4, 2]
     
-    plt.scatter(x, y)
-    plt.show()
+    d1=(x[1]-x[0])/(y[1]-y[0]);
+    d2=(x[2]-x[1])/(y[2]-y[1]);
     
+    cx=((y[2]-y[0])+(x[1]+x[2])*d2-(x[0]+x[1])*d1)/(2*(d2-d1))
+    cy=-d1*(cx-(x[0]+x[1])/2)+(y[0]+y[1])/2
+    
+    r = math.sqrt((x[0]-cx)**2+(y[0]-cy)**2)
+    
+    print(cx)
+    print(cy)
+    print(r)
+    
+    circle1 = plt.Circle((0, 0), 0.2, color='r', fill=False)
+    # scatt = plt.scatter(x, y)
+    
+    fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
+    
+    ax[0].set_xlim([-100, 100])
+    ax[0].set_ylim([-100, 100])
+    ax[1].set_xlim([-100, 100])
+    ax[1].set_ylim([-100, 100])
+    
+    ax[0].scatter(x, y)
+    ax[1].add_patch(circle1)
+    
+    fig.savefig("./aa.png")
+       
     # ATF_ERR_T CiADAS_ReconstructorDlg ::Get_Three_Point_Circle(float* r, AT_FPOINT* psRelMatchPos, const AT_FPOINT* psCenterPoint)
     # {
     #     float d1 = (psCenterPoint[1].x - psCenterPoint[0].x)/(psCenterPoint[1].y - psCenterPoint[0].y); 
