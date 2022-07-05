@@ -2,11 +2,12 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
-# import tensorflow as tf
+import tensorflow as tf
 import math
 import scipy
+import time
 
-# tf.enable_eager_execution()
+tf.enable_eager_execution()
 
 
 def gauss_newton():
@@ -30,13 +31,20 @@ def using_three_points():
         @param * psRelMatchPos:  원의 중심점 좌표
         @param * psCenterPoint:  세점들의 좌표
         @return Error code
+        
+    1. figure는 전체 하얀 종이, Axes는 네모로 나누어지는 구간이라고 생각하시면 됩니다. plt.subplots()에 입력하는 ncols, nrows에 따라 가로 세로 공간이 나누어집니다.
+    2. 네 그렇습니다. 참고로 nrows=2, ncols=2로 입력하시면 네 개로 나누어집니다. 이 때는 2차원 배열이 되기 때문에 ax[1,0] 식으로 지정해야 합니다.
+    3. 객체를 Axes에 붙이는 역할을 합니다. 포스트잇을 A4에 붙이듯 딱 붙이는 명령입니다.
+        
     """
-    
-    # sympy나 scipy
     
     x = [2, 5, 10]
     y = [5, 4, 2]
     
+    # x = [2, 10, 6]
+    # y = [5, 3, 2]
+    
+    # circle 구하기 http://egloos.zum.com/heilow/v/418569
     d1=(x[1]-x[0])/(y[1]-y[0]);
     d2=(x[2]-x[1])/(y[2]-y[1]);
     
@@ -49,38 +57,62 @@ def using_three_points():
     print(cy)
     print(r)
     
-    circle1 = plt.Circle((0, 0), 0.2, color='r', fill=False)
-    # scatt = plt.scatter(x, y)
+    x.append(cx)
+    y.append(cy)
     
-    fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 10))
     
-    ax[0].set_xlim([-100, 100])
-    ax[0].set_ylim([-100, 100])
-    ax[1].set_xlim([-100, 100])
-    ax[1].set_ylim([-100, 100])
+    # 접선방정식 구하기 m = 기울기, n = y 절편
+    m = (-1)*((cx-x[2])/[cy-y[2]])
+    n = (-1)*(m*x[2]) + y[2]
     
-    ax[0].scatter(x, y)
-    ax[1].add_patch(circle1)
+    x_line_point_list = list()
+    y_line_point_list = list()
+    
+    x_val1 = 1
+    x_val2 = 2
+    
+    y_1 = m*x_val1 + n
+    y_2 = m*x_val2 + n
+    
+    x_line_point_list.append(x_val1)
+    x_line_point_list.append(x_val2)    
+    y_line_point_list.append(y_1)    
+    y_line_point_list.append(y_2)    
+    
+    
+    
+    
+    circle1 = plt.Circle((cx, cy), r, color='r', fill=False)
+    
+    fig, ax = plt.subplots(figsize=(10, 10))
+    
+    ax.set_xlim([-100, 100])
+    ax.set_ylim([-100, 100])
+
+    
+    ax.scatter(x, y)
+    ax.add_patch(circle1)
+    ax.plot([cx, x[2]], [cy, y[2]])
     
     fig.savefig("./aa.png")
        
-    # ATF_ERR_T CiADAS_ReconstructorDlg ::Get_Three_Point_Circle(float* r, AT_FPOINT* psRelMatchPos, const AT_FPOINT* psCenterPoint)
-    # {
-    #     float d1 = (psCenterPoint[1].x - psCenterPoint[0].x)/(psCenterPoint[1].y - psCenterPoint[0].y); 
-    #     float d2 = (psCenterPoint[2].x - psCenterPoint[1].x)/(psCenterPoint[2].y - psCenterPoint[1].y); 
-        
-    #     float cx = ((psCenterPoint[2].y - psCenterPoint[0].y) + (psCenterPoint[1].x + psCenterPoint[2].x) * d2 - (psCenterPoint[0].x + psCenterPoint[1].x) * d1)/(2 * (d2 - d1)); 
-    #     float cy = (-d1 * (cx-(psCenterPoint[0].x + psCenterPoint[1].x)/2) + (psCenterPoint[0].y + psCenterPoint[1].y)/2 );
-        
-    #     psRelMatchPos->x = cx;
-    #     psRelMatchPos->y = cy;
-    #     *r = sqrt(pow((float)(psCenterPoint[0].x - cx), 2) + pow((float)(psCenterPoint[0].y - cy), 2));
-    #     return ATF_ERR_NONE;
-    # }
-        
-
 
 def gradient_descent():
+    
+    x = [np.random.rand() * 10 for i in range(100)]
+    x = np.array(x)
+    y = list()
+    
+    for i in range(len(x)):
+        y_item = np.sqrt(25 - np.square(x[i]-5))
+        if np.random.rand() < 0.5:
+            y_item = -y_item + 5.0
+        else:
+            y_item = y_item + 5.0
+        y.append(y_item)
+
+    y = np.array(y) + np.random.rand(100) * 4 - 2
+    
     # gradient descent
     # parameters initialize
     x_center = tf.Variable(1.0)
@@ -92,8 +124,9 @@ def gradient_descent():
     y_c_list = list()
     r_square_list = list()
 
-    # iteration 
-    for e in range(10000):
+    # iteration
+    t = time.time()
+    for e in range(4000):
         index = np.random.randint(0, 100, 10)
         with tf.GradientTape() as tape:
             dist = tf.square(x_center - x[index]) + tf.square(y_center - y[index])
@@ -109,6 +142,9 @@ def gradient_descent():
         y_c_list.append(y_center.numpy())
         r_square_list.append(r_square.numpy())
 
+    t2 = time.time()
+    time_result = time.localtime(t2 - t)
+    print(f"time: {time_result.tm_sec}")
 
     print(x_center)
     print(y_center)
@@ -133,26 +169,12 @@ if __name__ == "__main__":
     
     # data load x는 random sample, y는 원방정식을 기준으로 bais를 주어 생성
     
-    # x = [np.random.rand() * 10 for i in range(100)]
-    # x = np.array(x)
-
-    # y = list()
-    
-    # for i in range(len(x)):
-    #     y_item = np.sqrt(25 - np.square(x[i]-5))
-    #     if np.random.rand() < 0.5:
-    #         y_item = -y_item + 5.0
-    #     else:
-    #         y_item = y_item + 5.0
-    #     y.append(y_item)
-
-    # y = np.array(y) + np.random.rand(100) * 4 - 2
-    
+  
     
     # gradient_descent
-    # gradient_descent()
+    gradient_descent()
     
     # using three point 
-    using_three_points()
+    # using_three_points()
     
 
