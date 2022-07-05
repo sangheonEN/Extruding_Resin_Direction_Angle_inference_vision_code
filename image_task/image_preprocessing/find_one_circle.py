@@ -62,25 +62,17 @@ def using_three_points():
     
     
     # 접선방정식 구하기 m = 기울기, n = y 절편
-    m = (-1)*((cx-x[2])/[cy-y[2]])
+    m = (-1)*((cx-x[2])/(cy-y[2]))
     n = (-1)*(m*x[2]) + y[2]
+    x_range = np.arange(-100,100, 1)
+    y_range = [(m*num+n) for num in x_range]
+  
+    print(f"y = {m}x + {n}")
     
-    x_line_point_list = list()
-    y_line_point_list = list()
+    angle_rad = math.atan2((y_range[-1]-y_range[0]), (x_range[-1]-x_range[0]))
+    angle_deg = np.rad2deg(angle_rad)
     
-    x_val1 = 1
-    x_val2 = 2
-    
-    y_1 = m*x_val1 + n
-    y_2 = m*x_val2 + n
-    
-    x_line_point_list.append(x_val1)
-    x_line_point_list.append(x_val2)    
-    y_line_point_list.append(y_1)    
-    y_line_point_list.append(y_2)    
-    
-    
-    
+    print(f"angle: {angle_deg}")  
     
     circle1 = plt.Circle((cx, cy), r, color='r', fill=False)
     
@@ -93,6 +85,7 @@ def using_three_points():
     ax.scatter(x, y)
     ax.add_patch(circle1)
     ax.plot([cx, x[2]], [cy, y[2]])
+    ax.plot(x_range, y_range)
     
     fig.savefig("./aa.png")
        
@@ -172,9 +165,9 @@ if __name__ == "__main__":
   
     
     # gradient_descent
-    gradient_descent()
+    # gradient_descent()
     
     # using three point 
-    # using_three_points()
+    using_three_points()
     
 
