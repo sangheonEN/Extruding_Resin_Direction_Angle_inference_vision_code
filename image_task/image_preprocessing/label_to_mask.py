@@ -41,6 +41,12 @@ if __name__ == "__main__":
     curve = img>=2.
     curve = curve * 255.
 
+    # cv2.imshow("zz", curve)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    cv2.imwrite("./case_cp_sample.png", curve)
+
     curve_h, curve_w = np.where(curve == 255.)
 
     left_curve_idx = np.argwhere(curve_w <= 680)

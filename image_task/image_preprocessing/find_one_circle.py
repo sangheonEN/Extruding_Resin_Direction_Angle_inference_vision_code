@@ -191,7 +191,7 @@ def extract_three_points(left_w, left_h):
 
 if __name__ == "__main__":
 
-    img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data', 'Label_14.png')
+    img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data', 'Label_29.png')
 
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
@@ -207,18 +207,25 @@ if __name__ == "__main__":
 
     curve_h, curve_w = np.where(curve == 255.)
 
-    left_curve_idx = np.argwhere(curve_w <= 680)
+    mean = np.mean(curve_w)
+
+    left_curve_idx = np.argwhere(curve_w <= mean)
+    right_curve_idx = np.argwhere(curve_w >= mean)
 
     left_w = [curve_w[idx] for idx in left_curve_idx]
     left_h = [curve_h[idx] for idx in left_curve_idx]
 
-    x_points, y_points = extract_three_points(left_w, left_h)
+    right_w = [curve_w[idx] for idx in right_curve_idx]
+    right_h = [curve_h[idx] for idx in right_curve_idx]
+
+    left_x_points, left_y_points = extract_three_points(left_w, left_h)
+    right_x_points, right_y_points = extract_three_points(right_w, right_h)
         
     # gradient_descent
     # gradient_descent()
     
     # using three point 
-    print(f"points info: x:{x_points}, y: {y_points}")
-    using_three_points(x_points, y_points)
+    print(f"points info: x:{left_x_points}, y: {left_y_points}")
+    using_three_points(left_x_points, left_y_points)
     
 
