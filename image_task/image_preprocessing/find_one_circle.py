@@ -1,13 +1,13 @@
 import numpy as np
-import torch
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 import tensorflow as tf
 import math
-import scipy
 import time
+import cv2
+import os
 
-tf.enable_eager_execution()
+# tf.enable_eager_execution()
 
 
 def gauss_newton():
@@ -20,7 +20,7 @@ def gauss_newton():
     pass
 
 
-def using_three_points(): 
+def using_three_points(x, y): 
     """
     곡선의 시작, 중점, 끝점을 추출하여 세 점을 이용해서 원 파라미터를 구함.  http://heilow.egloos.com/v/418569
     input (x1, y1), (x2, y2), (x3, y3)
@@ -38,11 +38,13 @@ def using_three_points():
         
     """
     
-    x = [2, 5, 10]
-    y = [5, 4, 2]
+    # 임의의 데이터 생성
+    # x = [2, 5, 10]
+    # y = [5, 4, 2]
     
     # x = [2, 10, 6]
     # y = [5, 3, 2]
+
     
     # circle 구하기 http://egloos.zum.com/heilow/v/418569
     d1=(x[1]-x[0])/(y[1]-y[0]);
@@ -57,14 +59,19 @@ def using_three_points():
     print(cy)
     print(r)
     
-    x.append(cx)
-    y.append(cy)
+    # x.append(cx)
+    # y.append(cy)
     
     
     # 접선방정식 구하기 m = 기울기, n = y 절편
     m = (-1)*((cx-x[2])/(cy-y[2]))
     n = (-1)*(m*x[2]) + y[2]
-    x_range = np.arange(-100,100, 1)
+
+    min_x = 0.8 * min(x)
+    max_x = 1.2 * max(x)
+
+
+    x_range = np.arange(min_x,max_x, 0.5)
     y_range = [(m*num+n) for num in x_range]
   
     print(f"y = {m}x + {n}")
@@ -78,8 +85,8 @@ def using_three_points():
     
     fig, ax = plt.subplots(figsize=(10, 10))
     
-    ax.set_xlim([-100, 100])
-    ax.set_ylim([-100, 100])
+    ax.set_xlim([500, 900])
+    ax.set_ylim([500, 900])
 
     
     ax.scatter(x, y)
@@ -90,21 +97,24 @@ def using_three_points():
     fig.savefig("./aa.png")
        
 
-def gradient_descent():
+def gradient_descent(x, y):
     
-    x = [np.random.rand() * 10 for i in range(100)]
-    x = np.array(x)
-    y = list()
-    
-    for i in range(len(x)):
-        y_item = np.sqrt(25 - np.square(x[i]-5))
-        if np.random.rand() < 0.5:
-            y_item = -y_item + 5.0
-        else:
-            y_item = y_item + 5.0
-        y.append(y_item)
+    # 임의의 데이터 생성
+    # data load x는 random sample, y는 원방정식을 기준으로 bais를 주어 생성
 
-    y = np.array(y) + np.random.rand(100) * 4 - 2
+    # x = [np.random.rand() * 10 for i in range(100)]
+    # x = np.array(x)
+    # y = list()
+    
+    # for i in range(len(x)):
+    #     y_item = np.sqrt(25 - np.square(x[i]-5))
+    #     if np.random.rand() < 0.5:
+    #         y_item = -y_item + 5.0
+    #     else:
+    #         y_item = y_item + 5.0
+    #     y.append(y_item)
+
+    # y = np.array(y) + np.random.rand(100) * 4 - 2
     
     # gradient descent
     # parameters initialize
@@ -156,18 +166,59 @@ def gradient_descent():
 
     plt.show()
 
+def extract_three_points(left_w, left_h):
+    mid_idx = int(len(left_h) / 2)
+    start_idx = np.argmax(left_h)
+    end_idx = np.argmin(left_h)
+
+    start_point_w, start_point_h = left_w[start_idx], left_h[start_idx]
+    mid_point_w, mid_point_h = left_w[mid_idx], left_h[mid_idx]
+    end_point_w, end_point_h = left_w[end_idx], left_h[end_idx]
+
+    x_points_list = list()
+    y_points_list = list()
+
+    x_points_list.append(start_point_w)
+    x_points_list.append(mid_point_w)
+    x_points_list.append(end_point_w)
+    y_points_list.append(start_point_h)
+    y_points_list.append(mid_point_h)
+    y_points_list.append(end_point_h)
+
+    return x_points_list, y_points_list
+
+
 
 if __name__ == "__main__":
-    
-    
-    # data load x는 random sample, y는 원방정식을 기준으로 bais를 주어 생성
-    
-  
-    
+
+    img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data', 'Label_14.png')
+
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+    print(np.unique(img))
+
+    # pixel value 1 is object and 2 is curve
+    # img[img<=1.] = 0
+
+    object = img == 1.
+
+    curve = img>=2.
+    curve = curve * 255.
+
+    curve_h, curve_w = np.where(curve == 255.)
+
+    left_curve_idx = np.argwhere(curve_w <= 680)
+
+    left_w = [curve_w[idx] for idx in left_curve_idx]
+    left_h = [curve_h[idx] for idx in left_curve_idx]
+
+    x_points, y_points = extract_three_points(left_w, left_h)
+        
     # gradient_descent
     # gradient_descent()
     
     # using three point 
-    using_three_points()
+    print(f"points info: x:{x_points}, y: {y_points}")
+    using_three_points(x_points, y_points)
     
 
