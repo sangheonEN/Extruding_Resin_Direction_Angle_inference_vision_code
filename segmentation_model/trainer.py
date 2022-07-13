@@ -1,7 +1,7 @@
 import datetime
 import os.path as osp
 import torch
-import torch.nn.functional as F
+import loss_f
 import numpy as np
 import tqdm
 import math
@@ -10,20 +10,25 @@ import utils
 import os
 from importlib import import_module
 import shutil
+import torchvision.utils as vutils
+
 
 class solver(object):
-    def __init__(self, train_data_loader, valid_data_loader, opts):
+    def __init__(self, train_data_loader, valid_data_loader, opts, summary):
         self.data_loader_train = train_data_loader
         self.data_loader_valid = valid_data_loader
+        self.summary = summary
+        
+        num_class = len(self.data_loader_train.dataset.class_names)
 
         if opts.model == "deeplabv3":
             model_module = import_module('models.{}.deeplabv3_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.Deeplabv3(n_class=2)
+            self.model = model_module.Deeplabv3(n_class=num_class)
         else:
             model_module = import_module('models.{}.fcn_{}'.format(
                 opts.backbone, opts.backbone_layer))
-            self.model = model_module.FCN(n_class=2)
+            self.model = model_module.FCN(n_class=num_class)
 
         self.model.resume(opts.resume, test=opts.mode in ['inference'])
 
@@ -34,38 +39,23 @@ class solver(object):
 
         self.model.to(opts.cuda)
 
-    def cross_entropy2d(self, input, target, weight=None):
-
-        """Softmax + Negative Log Likelihood
-           input: (n, c, h, w), target: (n, h, w)
-           log_p: (n, c, h, w)
-           log_p: (n*h*w, c)
-           target: (n*h*w,)
-        """
-        n, c, h, w = input.size()
-        log_p = F.log_softmax(input, dim=1)
-        log_p = log_p.transpose(1, 2).transpose(2, 3).contiguous()
-        log_p = log_p[target.view(n, h, w, 1).repeat(1, 1, 1, c) >= 0]
-        log_p = log_p.view(-1, c)
-        mask = target >= 0
-        target = target[mask]
-        loss = F.nll_loss(log_p, target, weight=weight, reduction='sum')
-        return loss
 
 
 class Trainer(solver):
-    def __init__(self, train_data_loader, valid_data_loader, opts):
-        super(Trainer, self).__init__(train_data_loader, valid_data_loader, opts)
+    def __init__(self, train_data_loader, valid_data_loader, opts, summary):
+        super(Trainer, self).__init__(train_data_loader, valid_data_loader, opts, summary)
         self.cuda = opts.cuda
         self.opts = opts
         self.train_loader = train_data_loader
         self.val_loader = valid_data_loader
+        self.summary = summary
+
 
         if opts.mode in ['inference']:
             return
 
         self.timestamp_start = \
-            datetime.datetime.now(pytz.timezone('America/Bogota'))
+            datetime.datetime.now(pytz.timezone('Asia/Seoul'))
 
         self.interval_validate = opts.cfg.get('interval_validate',
                                               len(self.train_loader))
@@ -122,7 +112,26 @@ class Trainer(solver):
                 score = self.model(data)
 
                 # val loss function
-                loss = self.cross_entropy2d(score, target)
+                try:
+                    if self.opts.loss_func == 'ce':
+                        loss = loss_f.cross_entropy2d(score, target)
+                        
+                    elif self.opts.loss_func =='dice':
+                        ce_loss = loss_f.cross_entropy2d(score, target)
+                        dice = loss_f.DiceLoss(mode='multilabel', classes=[class_idx for class_idx in range(n_class)])
+                        dice_loss = dice(score, target)
+                        loss = dice_loss + ce_loss
+                    
+                    elif self.opts.loss_func == 'focal':
+                        focal = loss_f.FocalLoss(mode='multilabel', alpha=0.5, gamma=2)
+                        loss = focal(score, target)
+                        
+                    else:
+                        print("there is not loss function")
+                        
+                except Exception as e:
+                    print(e)
+                    
                 if np.isnan(float(loss.item())):
                     raise ValueError('loss is nan while validating')
                 val_loss += float(loss.item()) / len(data)
@@ -131,20 +140,30 @@ class Trainer(solver):
                 imgs = data.data.cpu()
                 lbl_pred = score.data.max(1)[1].cpu().numpy()[:, :, :]
                 lbl_true = target.data.cpu()
+                
                 for img, lt, lp in zip(imgs, lbl_true, lbl_pred):
                     img, lt = self.val_loader.dataset.untransform(img, lt)
                     lp = np.expand_dims(lp, -1)
                     label_trues.append(lt)
                     label_preds.append(lp)
+                
 
         metrics = utils.label_accuracy_score(label_trues, label_preds, n_class)
 
         val_loss /= len(self.val_loader)
+        
+        
+        # tensorboard train_loss, learning_rate, miou, acc
+        self.summary.add_scalar('Validation_loss', val_loss, self.epoch)
+        self.summary.add_scalar('Val_mIoU', metrics[2], self.epoch)
+        self.summary.add_scalar('Val_Accuracy',metrics[0], self.epoch)
+        
+        print(f"validation loss: {val_loss}\n")
 
         # val metric save
         with open(osp.join(self.out, 'log.csv'), 'a') as f:
             elapsed_time = (
-                datetime.datetime.now(pytz.timezone('America/Bogota')) -
+                datetime.datetime.now(pytz.timezone('Asia/Seoul')) -
                 self.timestamp_start).total_seconds()
             log = [self.epoch, self.iteration] + [''] * 5 + \
                   [val_loss] + list(metrics) + [elapsed_time]
@@ -155,7 +174,53 @@ class Trainer(solver):
         mean_iu = metrics[2]
         is_best = mean_iu > self.best_mean_iu
         if is_best:
+            print(f"Update model best Epoch: {self.epoch}\n")
             self.best_mean_iu = mean_iu
+            
+            label_true_visual = list()
+            label_pred_visual = list()
+            
+            label_colours = utils.LEE_COLORMAP
+            
+            for true in label_trues:
+                np.squeeze(true)
+                r = true.copy()
+                g = true.copy()
+                b = true.copy()
+                for ll in range(0, n_class):
+                    r[true == ll] = label_colours[ll][0]
+                    g[true == ll] = label_colours[ll][1]
+                    b[true == ll] = label_colours[ll][2]
+                rgb = np.zeros((true.shape[0], true.shape[1], 3))
+                rgb[:, :, 0] = b.squeeze()
+                rgb[:, :, 1] = g.squeeze()
+                rgb[:, :, 2] = r.squeeze()
+                
+                label_true_visual.append(rgb)
+            
+            for pred in label_preds:
+                pred.squeeze()
+                r = pred.copy()
+                g = pred.copy()
+                b = pred.copy()
+                for ll in range(0, n_class):
+                    r[pred == ll] = label_colours[ll][0]
+                    g[pred == ll] = label_colours[ll][1]
+                    b[pred == ll] = label_colours[ll][2]
+                rgb = np.zeros((true.shape[0], true.shape[1], 3))
+                rgb[:, :, 0] = b.squeeze()
+                rgb[:, :, 1] = g.squeeze()
+                rgb[:, :, 2] = r.squeeze()
+                
+                label_pred_visual.append(rgb)
+            
+            annotation_mask = torch.Tensor(np.array(label_true_visual)).permute(0, 3, 1, 2)
+            prediction_mask = torch.Tensor(np.array(label_pred_visual)).permute(0, 3, 1, 2)
+            annotation_mask_grid = vutils.make_grid(annotation_mask)
+            prediction_mask_grid = vutils.make_grid(prediction_mask)
+            self.summary.add_image(f'Valid_Anno_image_best_epoch:{self.epoch}', annotation_mask_grid, self.epoch)
+            self.summary.add_image(f'Valid_Pred_image_best_epoch:{self.epoch}', prediction_mask_grid, self.epoch)
+            
         torch.save(
             {
                 'epoch': self.epoch,
@@ -195,6 +260,8 @@ class Trainer(solver):
                 self.validate()
 
             assert self.model.training
+            
+            data, target = utils.augmentation_train(data, target)
 
             data, target = data.to(self.cuda), target.to(self.cuda)
 
@@ -202,7 +269,25 @@ class Trainer(solver):
             score = self.model(data)
 
             # loss function
-            loss = self.cross_entropy2d(score, target)
+            try:
+                if self.opts.loss_func == 'ce':
+                    loss = loss_f.cross_entropy2d(score, target)
+                elif self.opts.loss_func =='dice':
+                    ce_loss = loss_f.cross_entropy2d(score, target)
+
+                    dice = loss_f.DiceLoss(mode='multilabel', classes=[class_idx for class_idx in range(n_class)])
+                    dice_loss = dice(score, target)
+                    loss = dice_loss + ce_loss
+                
+                elif self.opts.loss_func == 'focal':
+                    focal = loss_f.FocalLoss(mode='multilabel', alpha=0.5, gamma=2)
+                    loss = focal(score, target)
+                
+                else:
+                    print("there is not loss function")
+            except Exception as e:
+                print(e)
+            
             loss /= len(data)
             if np.isnan(float(loss.item())):
                 raise ValueError('loss is nan while training')
@@ -211,7 +296,7 @@ class Trainer(solver):
             loss.backward()
             self.optim.step()
             self.scheduler.step()
-
+            
             # Segmentation metrics calculation
             metrics = []
             lbl_pred = score.data.max(1)[1].cpu().numpy()[:, :, :]
@@ -221,11 +306,17 @@ class Trainer(solver):
                     lbl_true, lbl_pred, n_class=n_class)
             metrics.append((acc, acc_cls, mean_iu, fwavacc))
             metrics = np.mean(metrics, axis=0)
+            
+            # tensorboard train_loss, learning_rate, miou, acc
+            self.summary.add_scalar('Train_loss', loss.item(), self.iteration)
+            self.summary.add_scalar('learning_rate', self.optim.param_groups[0]['lr'], self.iteration)
+            self.summary.add_scalar('Train_mIoU', mean_iu, self.iteration)
+            self.summary.add_scalar('Train_Accuracy',acc, self.iteration)
 
             # Segmentation metrics save
             with open(osp.join(self.out, 'log.csv'), 'a') as f:
                 elapsed_time = (
-                    datetime.datetime.now(pytz.timezone('America/Bogota')) -
+                    datetime.datetime.now(pytz.timezone('Asia/Seoul')) -
                     self.timestamp_start).total_seconds()
                 log = [self.epoch, self.iteration] + [loss.item()] + \
                     metrics.tolist() + [''] * 5 + [elapsed_time]

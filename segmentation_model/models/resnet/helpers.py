@@ -41,11 +41,11 @@ def prepare_optim(opts, model):
     # lr_schedule = Learning_rate_scheduler(optim, opts)
     if opts.lr_scheduler == "steplr":
 
-        scheduler = StepLR(optim, step_size= 10000, gamma=0.5)
+        scheduler = StepLR(optim, step_size= 4000, gamma=0.5)
 
     elif opts.lr_scheduler == 'CosineAnnealingWarmRestarts':
 
-        scheduler = CosineAnnealingWarmRestarts(optim, T_0=2000, T_mult=1, eta_min=1e-6,last_epoch=-1)
+        scheduler = CosineAnnealingWarmRestarts(optim, T_0=1000, T_mult=1, eta_min=1e-6,last_epoch=-1)
 
     elif opts.lr_scheduler == 'LambdaLR':
 

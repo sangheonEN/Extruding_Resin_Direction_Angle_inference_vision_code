@@ -8,9 +8,8 @@ import argparse
 import warnings
 warnings.filterwarnings('ignore')
 
-test_input_path = './datasets/VOCdata/test/input_data'
-test_mask_path = './datasets/VOCdata/test/mask_data'
-
+test_input_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DATA', 'test_data', 'image')
+test_mask_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'DATA', 'test_data', 'mask')
 
 def data_sort_list(input_path, mask_path):
     sort_function = lambda f: int(''.join(filter(str.isdigit, f)))
@@ -30,16 +29,17 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Model hyper-parameters
-    parser.add_argument('--mode', type=str, default='trainval', choices=['trainval', 'inference'])
+    parser.add_argument('--mode', type=str, default='inference', choices=['trainval', 'inference'])
     parser.add_argument("--gpu_id", type=int, default=0)
     parser.add_argument("--backbone", type=str, default='resnet')
-    parser.add_argument("--model", type=str, default='fcn', choices=['fcn', 'deeplabv3'])
-    parser.add_argument("--resume", type=str, default='',
+    parser.add_argument("--model", type=str, default='deeplabv3', choices=['fcn', 'deeplabv3'])
+    parser.add_argument("--resume", type=str, default='F:\KITECH\Die_Auto_Centering\code_work\segmentation_model\model_r2\experiments_result\\thrid\MODEL-deeplabv3_101\model_best.pth.tar',
                         help='model saver path opts.out에서 log dir을 만들고 거기에 모델 결과 log와 ckpt 파일(the last and best model)이 저장된다'
                              'inference 상태일때 저장된 best model의 file path를 입력하면 best model을 load함.'
                              'train, val 상태일때 the last model의 file path를 입력하면 the last model을 load해서 연속적인 학습가능.')
     parser.add_argument("--backbone_layer", type=str, default='101', choices=['50', '101'])
     opts = parser.parse_args()
+    
 
     opts.cuda = get_cuda(torch.cuda.is_available() and opts.gpu_id != -1,
                          opts.gpu_id)

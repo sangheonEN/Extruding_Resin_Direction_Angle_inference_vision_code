@@ -8,6 +8,8 @@ def mkdir_f(path):
 
     if not os.path.exists(path):
         os.makedirs(path)
+    
+        return
 
 
 def mask_to_255():
@@ -38,12 +40,12 @@ def mask_to_255():
 
             src = src *255.
 
-            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', file, image), src)
+            # cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', file, image), src)
 
-            # cv2.imshow("zz", src)
+            cv2.imshow("zz", src)
 
-            # cv2.waitKey(0)
-            # cv2.destroyAllWindows()
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             
 
 def data_gather_one_dir():
@@ -157,12 +159,56 @@ def train_valid_test_split_f():
         cv2.imwrite(os.path.join(test_path_mask, test_mask_n), test_mask)
 
 
+def data_final_evaluate_using_visualization(test_image_path, test_mask_path):
+    
+    # test_image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", "image", "0083.png")
+    # test_mask_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", "mask", "0083.png")
+    
+    # h, w, c
+    mask = cv2.imread(test_mask_path, cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread(test_image_path, cv2.IMREAD_COLOR)
+    
+    h, w = mask.shape
+    
+    belong_to_image_pixel_value = np.unique(mask)
+    
+    curve_2_idx = np.argwhere(mask==belong_to_image_pixel_value[-1])
+    curve_1_idx = np.argwhere(mask==belong_to_image_pixel_value[2])
+    object_idx = np.argwhere(mask==belong_to_image_pixel_value[1])
+    
+    curve_2 = np.zeros((h, w))
+    curve_1 = np.zeros((h, w))
+    object = np.zeros((h, w))
+    
+    for i in range(len(curve_2_idx)):
+        h, w = curve_2_idx[i]
+        curve_2[h, w] = 255.
+    
+    for i in range(len(curve_1_idx)):
+        h, w = curve_1_idx[i]
+        curve_1[h, w] = 255.
+        
+    for i in range(len(object_idx)):
+        h, w = object_idx[i]
+        object[h, w] = 255.
+        
+    
+    cv2.imshow("curve_2", curve_2)
+    cv2.imshow("curve_1", curve_1)
+    cv2.imshow("object", object)
+    cv2.imshow("image", img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+
 if __name__ == '__main__':
+    
+    data_final_evaluate_using_visualization()
 
 
     # data_gather_one_dir()
-    # mask_to_255()
-    train_valid_test_split_f()
+    # train_valid_test_split_f()
 
 
 
