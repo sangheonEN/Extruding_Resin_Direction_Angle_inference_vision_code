@@ -30,15 +30,15 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/jteks/anaconda3/envs/torch_1/python.exe",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/jteks/anaconda3/envs/torch_1/python.exe&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.loss_f">
     <configuration name="loss_f" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="segmentation_model" />
@@ -97,6 +97,7 @@
       <option name="presentableId" value="Default" />
       <updated>1657689790775</updated>
       <workItem from="1657689792265" duration="4992000" />
+      <workItem from="1657696459523" duration="574000" />
     </task>
     <servers />
   </component>

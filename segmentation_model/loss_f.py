@@ -353,6 +353,7 @@ def focal_loss(input, target, alpha, gamma, reduction, eps, ignore_index):
     
     # alpha, weight, input_soft : (B, C, H, W)
     # focal : (B, C, H, W)
+    # focal = -alpha * (1-soft_max_probability)^gamma * negative log likelihood loss(soft_max_probability)
     focal = -alpha * weight * torch.log(input_soft)
     
     # loss_tmp : (B, H, W)
