@@ -30,8 +30,8 @@ if __name__ == "__main__":
                              'train, val 상태일때 the last model의 file path를 입력하면 the last model을 load해서 연속적인 학습가능.')
     parser.add_argument("--backbone_layer", type=str, default='101', choices=['50', '101'])
     parser.add_argument("--optim", type=str, default='adam', choices=['adam', 'sgd'])
-    parser.add_argument("--lr_scheduler", type=str, default='steplr', choices=['steplr', 'CosineAnnealingWarmRestarts', 'LambdaLR'])
-    parser.add_argument("--loss_func", type=str, default='ce', choices=['ce', 'dice', 'focal'])
+    parser.add_argument("--lr_scheduler", type=str, default='CosineAnnealingWarmRestarts', choices=['steplr', 'CosineAnnealingWarmRestarts', 'LambdaLR'])
+    parser.add_argument("--loss_func", type=str, default='focal', choices=['ce', 'dice', 'focal'])
 
     opts = parser.parse_args()
 

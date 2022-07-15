@@ -42,7 +42,7 @@ def get_config():
         1:
         dict(
             max_iteration=12500,
-            lr=1.0e-5,
+            lr=1.0e-7,
             momentum=0.99,
             weight_decay=0.0005
             # interval_validate=4000

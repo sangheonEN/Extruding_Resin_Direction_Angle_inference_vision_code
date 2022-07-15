@@ -123,7 +123,7 @@ class Trainer(solver):
                         loss = dice_loss + ce_loss
                     
                     elif self.opts.loss_func == 'focal':
-                        focal = loss_f.FocalLoss(alpha=0.25, gamma=2)
+                        focal = loss_f.FocalLoss(alpha=0.5, gamma=2)
                         loss = focal(score, target)
                         
                     else:
@@ -280,7 +280,7 @@ class Trainer(solver):
                     loss = dice_loss + ce_loss
                 
                 elif self.opts.loss_func == 'focal':
-                    focal = loss_f.FocalLoss(mode='multilabel', alpha=0.5, gamma=2)
+                    focal = loss_f.FocalLoss(alpha=0.25, gamma=2, reduction='sum')
                     loss = focal(score, target)
                 
                 else:
