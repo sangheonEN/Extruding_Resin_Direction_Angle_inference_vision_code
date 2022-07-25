@@ -35,7 +35,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/jteks/anaconda3/envs/torch_2/python.exe",
+    "last_opened_file_path": "C:/Users/jteks/Desktop/Diecentering/code/die_centering",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -99,6 +99,9 @@
       <workItem from="1657689792265" duration="4992000" />
       <workItem from="1657696459523" duration="762000" />
       <workItem from="1657698406207" duration="388000" />
+      <workItem from="1658240619866" duration="9000" />
+      <workItem from="1658556665904" duration="55000" />
+      <workItem from="1658559926711" duration="130000" />
     </task>
     <servers />
   </component>
