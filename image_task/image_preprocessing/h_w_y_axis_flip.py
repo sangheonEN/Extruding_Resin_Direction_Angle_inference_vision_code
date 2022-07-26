@@ -15,6 +15,17 @@ def dist(coordi_1, coordi_2):
     return np.linalg.norm(coordi_1 - coordi_2)
 
 
+def extract_three_points(sort_left_curve_array):
+
+    start_idx = 0
+    mid_idx = len(sort_left_curve_array) / 2
+    end_idx = len(sort_left_curve_array) - 1
+
+    start_point = sort_left_curve_array[start_idx]
+    mid_point = sort_left_curve_array[int(mid_idx)]
+    end_point = sort_left_curve_array[end_idx]
+
+    return start_point, mid_point, end_point
 
 
 if __name__ == "__main__":
@@ -76,25 +87,49 @@ if __name__ == "__main__":
     left_curve_array = np.array([left_curve_w, left_curve_h]).transpose(1, 0)
     initial_coordinate = left_curve_array[start_idx]
 
+    # 시작하는 좌표 점 계산 flag, 그 후에는 new idx coordinate로 전환
+    initial_flag = True
     # order save
     while True:
-
-        
-
-        dist(initial_coordinate, next_coordinate)
-
 
         if len(coordinate_order) == points_num:
             break
 
+        # 거리 계산 저장할 array
+        distance_array = np.zeros((len(left_curve_array)))
+
+        # 외곽선 점 좌표끼리 거리계산
+        for idx, next_coordinate in enumerate(left_curve_array):
+            # 재방문 안되게 하기.
+            if idx in coordinate_order:
+                continue
+            # 거리계산
+            if initial_flag == True:
+                distance = dist(initial_coordinate, next_coordinate)
+            else:
+                distance = dist(left_curve_array[next_coordinate_idx], next_coordinate)
+            # 거리 array에 index별로 distance 저장
+            distance_array[idx] = distance
+
+        # 대신 distance 계산이 안되거나 본인 index면 0으로 저장되니 index는 inf화 하여 min 값 계산 안되도록 치환
+        distance_array[distance_array <= 0] = float("inf")
+        # 가장 작은 distance를 가지는 index 뽑아서 다음 순서로 저장.
+        new_idx = np.where(distance_array == min(distance_array))
+        if len(new_idx[0]) >= 2:
+            for i in new_idx[0]:
+                coordinate_order.append(i)
+                next_coordinate_idx = i
+        else:
+            coordinate_order.append(new_idx[0][0])
+            next_coordinate_idx = new_idx[0][0]
+        initial_flag = False
 
 
+    # extract three points
+    start, mid, end = extract_three_points(left_curve_array[coordinate_order])
 
 
-
-
-
-
-    print("z")
-
-
+    print(f"start point: {start}\n")
+    print(f"mid point: {mid}\n")
+    print(f"end point: {end}\n")
+    print(f"all points {left_curve_array[coordinate_order]}")
