@@ -98,7 +98,7 @@ def using_three_points(x, y, all_points):
     ax.plot([cx, x[2]], [cy, y[2]])
     ax.plot(x_range, y_range)
     
-    fig.savefig("./aa.png")
+    fig.savefig("./three_points_circle_angle.png")
 
     return angle_deg
        

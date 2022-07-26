@@ -5,38 +5,7 @@ import matplotlib.pyplot as plt
 import find_one_circle
 
 
-
-def dist(coordi_1, coordi_2):
-
-    print(coordi_1)
-    print(coordi_2)
-    print(f"dist: {np.linalg.norm(coordi_1 - coordi_2)}")
-
-
-    return np.linalg.norm(coordi_1 - coordi_2)
-
-
-def extract_three_points(sort_left_curve_array):
-
-    start_idx = 0
-    mid_idx = len(sort_left_curve_array) / 2
-    end_idx = len(sort_left_curve_array) - 1
-
-    start_point = sort_left_curve_array[start_idx]
-    mid_point = sort_left_curve_array[int(mid_idx)]
-    end_point = sort_left_curve_array[end_idx]
-
-    return start_point, mid_point, end_point
-
-
-if __name__ == "__main__":
-
-    print(os.path.dirname(os.path.abspath(__file__)))
-
-    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", '0118.png')
-
-    # img shape: h, w, c
-    img = cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE)
+def parallel_movement(img):
 
     img_label_index = np.unique(img)
 
@@ -66,15 +35,19 @@ if __name__ == "__main__":
     # y 축 기준으로 flip
     right_curve_h *= -1
 
-    plt.scatter(left_curve_w, left_curve_h, c='red', s=1)
-    plt.scatter(right_curve_w, right_curve_h, c='blue', s=1)
-    plt.xlim(min(min(left_curve_w), min(right_curve_w))-10, max(max(left_curve_w), max(right_curve_w))+10)
-    plt.ylim(min(min(left_curve_h), min(right_curve_h))-10, max(max(left_curve_h), max(right_curve_h))+10)
-    # plt.xticks()
-    # plt.yticks()
-    plt.show()
+    # points visualization
+    # plt.scatter(left_curve_w, left_curve_h, c='red', s=1)
+    # plt.scatter(right_curve_w, right_curve_h, c='blue', s=1)
+    # plt.xlim(min(min(left_curve_w), min(right_curve_w))-10, max(max(left_curve_w), max(right_curve_w))+10)
+    # plt.ylim(min(min(left_curve_h), min(right_curve_h))-10, max(max(left_curve_h), max(right_curve_h))+10)
+    # # plt.xticks()
+    # # plt.yticks()
+    # plt.show()
 
-    curve_coordinates = dict(left_curve=[left_curve_w, left_curve_h], right_curve=[right_curve_w, right_curve_h])
+    return left_curve_w, left_curve_h, right_curve_w, right_curve_h
+
+
+def order_curve_points(left_curve_w, left_curve_h):
 
     # 점 가지고 첫 점, 끝 점 중앙점 찾기 코드 distance로!!
     coordinate_order = list()
@@ -126,25 +99,72 @@ if __name__ == "__main__":
         initial_flag = False
 
 
-    # extract three points
-    start, mid, end = extract_three_points(left_curve_array[coordinate_order])
+    return left_curve_array[coordinate_order]
 
-    x = list()
-    y = list()
+def dist(coordi_1, coordi_2):
 
-    x.append(end[0])
-    x.append(mid[0])
-    x.append(start[0])
-    y.append(end[1])
-    y.append(mid[1])
-    y.append(start[1])
+    print(coordi_1)
+    print(coordi_2)
+    print(f"dist: {np.linalg.norm(coordi_1 - coordi_2)}")
 
-    angle = find_one_circle.using_three_points(x, y, left_curve_array)
 
-    print(f"start point: {start}\n")
-    print(f"mid point: {mid}\n")
-    print(f"end point: {end}\n")
-    print(f"all points {left_curve_array[coordinate_order]}")
+    return np.linalg.norm(coordi_1 - coordi_2)
+
+
+def extract_three_points(sort_left_curve_array):
+
+    start_idx = 0
+    mid_idx = len(sort_left_curve_array) / 2
+    end_idx = len(sort_left_curve_array) - 1
+
+    start_point = sort_left_curve_array[start_idx]
+    mid_point = sort_left_curve_array[int(mid_idx)]
+    end_point = sort_left_curve_array[end_idx]
+
+    return start_point, mid_point, end_point
+
+
+# if __name__ == "__main__":
+#
+#     print(os.path.dirname(os.path.abspath(__file__)))
+#
+#     mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", '0118.png')
+#
+#     # img shape: h, w, c
+#     img = cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE)
+#
+#     left_curve_w, left_curve_h, right_curve_w, right_curve_h = parallel_movement(img)
+#
+#
+#     left_order_curve_array = order_curve_points(left_curve_w, left_curve_h)
+#     right_order_curve_array = order_curve_points(right_curve_w, right_curve_h)
+#     # extract three points
+#     start_l, mid_l, end_l = extract_three_points(left_order_curve_array)
+#     start_r, mid_r, end_r = extract_three_points(right_order_curve_array)
+#
+#
+#     left_x_list = list()
+#     left_y_list = list()
+#     right_x_list = list()
+#     right_y_list = list()
+#
+#     left_x_list.append(end_l[0])
+#     left_x_list.append(mid_l[0])
+#     left_x_list.append(start_l[0])
+#     left_y_list.append(end_l[1])
+#     left_y_list.append(mid_l[1])
+#     left_y_list.append(start_l[1])
+#
+#     right_x_list.append(end_r[0])
+#     right_x_list.append(mid_r[0])
+#     right_x_list.append(start_r[0])
+#     right_y_list.append(end_r[1])
+#     right_y_list.append(mid_r[1])
+#     right_y_list.append(start_r[1])
+#
+#
+#     left_angle = find_one_circle.using_three_points(left_x_list, left_y_list, left_order_curve_array)
+#     right_angle = find_one_circle.using_three_points(right_x_list, right_y_list, right_order_curve_array)
 
     ## [visualization]
     # Draw the principal components
