@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import os
 import matplotlib.pyplot as plt
+import find_one_circle
 
 
 
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     print(os.path.dirname(os.path.abspath(__file__)))
 
-    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", 'Label_35.png')
+    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data", '0118.png')
 
     # img shape: h, w, c
     img = cv2.imread(mask_file_path, cv2.IMREAD_GRAYSCALE)
@@ -128,8 +129,29 @@ if __name__ == "__main__":
     # extract three points
     start, mid, end = extract_three_points(left_curve_array[coordinate_order])
 
+    x = list()
+    y = list()
+
+    x.append(end[0])
+    x.append(mid[0])
+    x.append(start[0])
+    y.append(end[1])
+    y.append(mid[1])
+    y.append(start[1])
+
+    angle = find_one_circle.using_three_points(x, y, left_curve_array)
 
     print(f"start point: {start}\n")
     print(f"mid point: {mid}\n")
     print(f"end point: {end}\n")
     print(f"all points {left_curve_array[coordinate_order]}")
+
+    ## [visualization]
+    # Draw the principal components
+    # cv2.circle(img, cntr, 3, (255, 0, 255), 2)
+    # # 이미지상 y축은 아래로 양수니까 위쪽으로 선을 긋기 위해 eigenvector[0, 1] y값은 원점에 -로 더해주어 스케일 업 해준다.
+    # cv2.line(img, (int(cntr[0]), int(cntr[1])),
+    #          (int(cntr[0] + eigenvectors[0, 0] * scale_factor), int(cntr[1] - eigenvectors[0, 1] * scale_factor)),
+    #          (255, 255, 0), 1, cv2.LINE_AA)
+    # cv2.putText(img, f"Rotation_ Angle {str(angle)}", (cntr[0] + 20, cntr[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
+    #             (0, 0, 255), 1, cv2.LINE_AA)

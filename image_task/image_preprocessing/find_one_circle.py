@@ -20,7 +20,7 @@ def gauss_newton():
     pass
 
 
-def using_three_points(x, y): 
+def using_three_points(x, y, all_points):
     """
     곡선의 시작, 중점, 끝점을 추출하여 세 점을 이용해서 원 파라미터를 구함.  http://heilow.egloos.com/v/418569
     input (x1, y1), (x2, y2), (x3, y3)
@@ -78,23 +78,29 @@ def using_three_points(x, y):
     
     angle_rad = math.atan2((y_range[-1]-y_range[0]), (x_range[-1]-x_range[0]))
     angle_deg = np.rad2deg(angle_rad)
-    
-    print(f"angle: {angle_deg}")  
-    
+    angle_rad2 = math.atan((y_range[-1]-y_range[0]) / (x_range[-1]-x_range[0]))
+    angle_deg2 = np.rad2deg(angle_rad2)
+
+
+    print(f"angle1: {angle_deg}")
+    print(f"angle2: {angle_deg2}")
+
     circle1 = plt.Circle((cx, cy), r, color='r', fill=False)
     
     fig, ax = plt.subplots(figsize=(10, 10))
     
-    ax.set_xlim([500, 900])
-    ax.set_ylim([500, 900])
+    ax.set_xlim([min(all_points[:,0]-10), max(all_points[:,0])+10])
+    ax.set_ylim([min(all_points[:,1]-10), max(all_points[:,1]+10)])
 
-    
+    ax.scatter(all_points[:,0],all_points[:,1])
     ax.scatter(x, y)
     ax.add_patch(circle1)
     ax.plot([cx, x[2]], [cy, y[2]])
     ax.plot(x_range, y_range)
     
     fig.savefig("./aa.png")
+
+    return angle_deg
        
 
 def gradient_descent(x, y):
