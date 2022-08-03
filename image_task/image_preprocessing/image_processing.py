@@ -491,16 +491,16 @@ class Circle_detec:
         each_circle_min_distance_s = 10
         canny_threshold_s = 155
         mid_threshold_s = 10
-        minRadius_s = 10
-        maxRadius_s = 15
+        minRadius_s = 400
+        maxRadius_s = 500
 
         # big circle
         resolution_ratio_b = 1
-        each_circle_min_distance_b = 250
+        each_circle_min_distance_b = 1000
         canny_threshold_b = 101
         mid_threshold_b = 20
-        minRadius_b = 50
-        maxRadius_b = 100
+        minRadius_b = 270
+        maxRadius_b = 300
 
         img_num = 0
 
@@ -516,18 +516,20 @@ class Circle_detec:
         
         for i in circles_big[0]:
             # dst = img.copy()
-            cv2.circle(dst_b, (i[0], i[1]), i[2], (255, 255, 255), 1)
+            cv2.circle(dst_b, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 1)
+
+            print(f"center (x, y) = {(int(i[0]), int(i[1]))}")
 
             # cv2.imwrite(os.path.join('./circle_detection_result/%04d.png' %img_num), dst)
 
             # img_num += 1
 
             # if img_num == 1 or img_num == 50:
-            #     print(i)
+                # print(i)
 
         for i in circles_small[0]:
             # dst = img.copy()
-            cv2.circle(dst_s, (i[0], i[1]), i[2], (255, 255, 255), 1)
+            cv2.circle(dst_s, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 1)
 
             # cv2.imwrite(os.path.join('./circle_detection_result/%04d.png' %img_num), dst)
 
@@ -607,6 +609,7 @@ class Trackbar_window:
 if __name__ == "__main__":
 
     base_path = os.path.abspath(os.path.dirname("__file__"))
+    base_path = os.path.join(base_path, "image_task", "image_preprocessing")
 
     if not os.path.exists(os.path.join(base_path, 'before_processing')):
         os.makedirs(os.path.join(base_path, 'before_processing'))
@@ -621,13 +624,16 @@ if __name__ == "__main__":
     folder_list = os.listdir(img_path)
     img_list = [file for file in folder_list if file.endswith('.png')]
 
-    # # image_path, image_list, save_path
+    # image_path, image_list, save_path
 
-    binary_proc = Binary_proc(img_list, img_path, saver_path)
-    binary_proc.proc()
+    # binary_proc = Binary_proc(img_list, img_path, saver_path)
+    # binary_proc.proc()
 
     # kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
     # kmeans_cluster_1.proc()
+
+    circle = Circle_detec(img_list, img_path, saver_path)
+    circle.proc()
 
 
     print("End Processing")
