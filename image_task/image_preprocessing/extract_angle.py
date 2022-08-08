@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
     print(os.path.dirname(os.path.abspath(__file__)))
 
-    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
+    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pred_curve")
 
     image_list = os.listdir(mask_file_path)
 
@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
         # pca를 이용한 외곽선 점 데이터 고유벡터 선형 각도 추출
         # side
-        left_angle, right_angle = side_pca_angle(img, image_path)
+        # left_angle, right_angle = side_pca_angle(img, image_path)
         # front
         left_angle, right_angle = front_pca_angle(img, image_path)
 

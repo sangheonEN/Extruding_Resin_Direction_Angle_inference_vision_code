@@ -499,8 +499,8 @@ class Circle_detec:
         each_circle_min_distance_b = 1000
         canny_threshold_b = 101
         mid_threshold_b = 20
-        minRadius_b = 270
-        maxRadius_b = 300
+        minRadius_b = 100
+        maxRadius_b = 200
 
         img_num = 0
 
@@ -609,7 +609,7 @@ class Trackbar_window:
 if __name__ == "__main__":
 
     base_path = os.path.abspath(os.path.dirname("__file__"))
-    base_path = os.path.join(base_path, "image_task", "image_preprocessing")
+    # base_path = os.path.join(base_path, "image_task", "image_preprocessing")
 
     if not os.path.exists(os.path.join(base_path, 'before_processing')):
         os.makedirs(os.path.join(base_path, 'before_processing'))
