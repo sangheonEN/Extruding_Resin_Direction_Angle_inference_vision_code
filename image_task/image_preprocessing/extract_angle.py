@@ -173,7 +173,7 @@ def front_pca_angle_case0234(img, img_path):
 
     return left_angle, right_angle
 
-def front_pca_angle_direction_change(img, img_path):
+def front_pca_angle_direction_change(img, img_path, angle_list):
     # 이미지 좌표 y좌표 평행이동 및 y축 반전
 
     img_label_index = np.unique(img)
@@ -233,7 +233,7 @@ def front_pca_angle_direction_change(img, img_path):
     left_angle = np.rad2deg(left_angle)
     right_angle = np.rad2deg(right_angle)
 
-    change_direction_hyperparameters = 90 # direction change = 180, not change = 0
+    change_direction_hyperparameters = 0 # direction change = 180, not change = 0
 
     final_angle = (left_angle + right_angle)/2 + change_direction_hyperparameters
 
@@ -254,17 +254,17 @@ def front_pca_angle_direction_change(img, img_path):
     x_rotated = mean_exflusion_w + int(np.cos(np.pi / -180 * final_angle)*600)
 
     # 기존 좌표와 이미지 끝에 교차된 점 까지를 이은 직선을 그립니다.
-    cv2.line(rgb, (mean_exflusion_w, mean_exflusion_h), (x_rotated, y_rotated), (255, 0, 0))
+    cv2.line(rgb, (mean_exflusion_w, mean_exflusion_h), (x_rotated, y_rotated), (0, 255, 0), 2, cv2.LINE_AA)
 
     angle = atan2(float(mean_exflusion_h - y_rotated), float(mean_exflusion_w - x_rotated)) # angle in radians
 
     # create the arrow hooks
     mean_exflusion_w = x_rotated + 9 * cos(angle + pi / 4)
     mean_exflusion_h = y_rotated + 9 * sin(angle + pi / 4)
-    cv2.line(img, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 10, cv2.LINE_AA)
+    cv2.line(rgb, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 5, cv2.LINE_AA)
     mean_exflusion_w = x_rotated + 9 * cos(angle - pi / 4)
     mean_exflusion_h = y_rotated + 9 * sin(angle - pi / 4)
-    cv2.line(img, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 10, cv2.LINE_AA)
+    cv2.line(rgb, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 5, cv2.LINE_AA)
 
 
     # # create the arrow hooks
@@ -281,6 +281,7 @@ def front_pca_angle_direction_change(img, img_path):
     cv2.putText(rgb, f"final_angle: {round(final_angle, 2)}", (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2)
     cv2.imwrite(f"./pca_angle/front/{img_path}", rgb)
 
+    angle_list.append(final_angle)
 
     # while (1):
     #     cv2.imshow('image', rgb)
@@ -448,6 +449,8 @@ if __name__ == "__main__":
 
     for image_path in image_list:
 
+        angle_list = list()
+
         # img shape: h, w, c
         img = cv2.imread(os.path.join(mask_file_path, image_path), cv2.IMREAD_GRAYSCALE)
 
@@ -466,7 +469,7 @@ if __name__ == "__main__":
         # front
         # left_angle, right_angle = front_pca_angle_case0234(img, image_path)
 
-        left_angle, right_angle = front_pca_angle_direction_change(img, image_path)
+        left_angle, right_angle = front_pca_angle_direction_change(img, image_path, angle_list)
 
         # print(f"left_angle: {left_angle}\n")
         # print(f"right_angle: {right_angle}\n")
