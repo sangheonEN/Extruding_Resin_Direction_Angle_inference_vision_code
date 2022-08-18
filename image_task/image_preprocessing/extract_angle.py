@@ -233,7 +233,7 @@ def front_pca_angle_direction_change(img, img_path, angle_list):
     left_angle = np.rad2deg(left_angle)
     right_angle = np.rad2deg(right_angle)
 
-    change_direction_hyperparameters = 0 # direction change = 180, not change = 0
+    change_direction_hyperparameters = 180# direction change = 180, not change = 0
 
     final_angle = (left_angle + right_angle)/2 + change_direction_hyperparameters
 
