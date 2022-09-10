@@ -48,5 +48,9 @@ Semantic segmentation my focal loss와 타 loss function과의 성능 비교 결
 **
 <hr/>
 
+각도 추론 이미지
+
+![image](https://user-images.githubusercontent.com/69128174/189470281-b7d00268-c03a-4e32-9ba9-9e0e1e88c3db.png)
+
 
 
