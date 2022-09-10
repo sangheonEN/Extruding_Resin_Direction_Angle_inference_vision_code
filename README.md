@@ -32,14 +32,21 @@ Folder segmentation_model
        - loss function -> cross entropy, focal, effective number, my_focal
        
        my focal loss: softmax logits의 변량 편차를 높여 확실한 판단 확률 변량을 가지도록 지도하는 직관을 기반으로 합니다.
-       
-       ![image](https://user-images.githubusercontent.com/69128174/189470166-aa113081-92d7-4e21-be66-7e26a7715418.png)
 
-
-Folder convlstm
-       - classification using regression thresholding
+![image](https://user-images.githubusercontent.com/69128174/189470182-afb79555-062a-4bfe-aa54-b5dae03e1a57.png)
        
 Folder video_task
        - video to image (fps) 
 <hr/>
+
+<hr/>
+Semantic segmentation my focal loss와 타 loss function과의 성능 비교 결과 평가 매트릭 iou 기준
+
+![image](https://user-images.githubusercontent.com/69128174/189470226-d9450f75-2bdf-4fd7-bf51-4c873c5a08e2.png)
+
+**mIoU 86.45 달성
+**
+<hr/>
+
+
 
