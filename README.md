@@ -9,4 +9,17 @@ model architecture fcn, deeplabv3
 
 coco dataset Image Pre-Processing
 
+<hr/>
+Folder image_task
+       - binary image for threshold method, angle extraction method
+       
+Folder segmentation_model
+       - fcn, deeplabv3 segmentation
+
+Folder convlstm
+       - classification using regression thresholding
+       
+Folder video_task
+       - video to image (fps) 
+<hr/>
 
