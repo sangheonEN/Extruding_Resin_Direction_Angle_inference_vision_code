@@ -16,6 +16,7 @@ Folder image_task
        
 Folder segmentation_model
        - fcn, deeplabv3 segmentation
+       - loss function -> cross entropy, focal, effective number, my_focal
 
 Folder convlstm
        - classification using regression thresholding
