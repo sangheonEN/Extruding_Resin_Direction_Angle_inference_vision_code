@@ -1,10 +1,12 @@
-# Future-Semantic-Segmentation-with-Convolutional-LSTM
-Die Centering with Convolutional LSTM paper code work
+# Semantic-Segmentation-with-Convolutional for predict line of extruded resin
+
 <hr/>
-Regression using image seqence data.
+Segmentation using sequence image data.
 <hr/>
 
-model architecture
+backbone: resnet101, 50
+model architecture fcn, deeplabv3
 
-model Image Pre-Processing
-![image](https://user-images.githubusercontent.com/69128174/158092953-1793fd66-9691-4f9d-b538-694e62f44581.png)
+coco dataset Image Pre-Processing
+
+
