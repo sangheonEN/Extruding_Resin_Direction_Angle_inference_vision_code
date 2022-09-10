@@ -10,6 +10,7 @@ model architecture fcn, deeplabv3
 coco dataset Image Pre-Processing
 
 <hr/>
+
 Folder image_task
        - binary image for threshold method, angle extraction method
        
