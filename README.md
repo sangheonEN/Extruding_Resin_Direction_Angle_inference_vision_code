@@ -2,6 +2,10 @@
 
 <hr/>
 Segmentation using sequence image data.
+
+![image](https://user-images.githubusercontent.com/69128174/189470084-a111684a-37d8-4f12-abbb-6599ecba5719.png)
+
+
 <hr/>
 
 backbone: resnet101, 50
