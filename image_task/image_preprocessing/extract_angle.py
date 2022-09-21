@@ -591,6 +591,8 @@ if __name__ == "__main__":
         # front
         # left_angle, right_angle = front_pca_angle_case0234(img, image_path)
 
+        # front_pca_angle_direction_change, side_pca_angle_direction_change
+
         left_angle, right_angle = side_pca_angle_direction_change(img, image_path, angle_list)
 
         # print(f"left_angle: {left_angle}\n")
