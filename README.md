@@ -31,7 +31,7 @@ Folder segmentation_model
        - fcn, deeplabv3 segmentation
        - loss function -> cross entropy, focal, effective number, my_focal
        
-       my focal loss: softmax logits의 변량 편차를 높여 확실한 판단 확률 변량을 가지도록 지도하는 직관을 기반으로 합니다.
+       Loss Affected by Standard Deviation: softmax logits 표준편차를 높이는 방향으로 확실한 판단 확률 변량을 가지도록 지도하는 직관을 기반으로 손실함수에 가중치를 반영합니다.
 
 ![image](https://user-images.githubusercontent.com/69128174/189470182-afb79555-062a-4bfe-aa54-b5dae03e1a57.png)
        
