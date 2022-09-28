@@ -26,7 +26,7 @@ class CustomImageDataset(Dataset):
         mask = cv2.imread(os.path.join(self.mask_path, self.mask_list[idx]), cv2.IMREAD_GRAYSCALE)
         mask = np.expand_dims(mask, -1)
         
-        image, mask = self.roi_crop(image, mask)
+        # image, mask = self.roi_crop(image, mask)
 
         image, mask = self.transform(image, mask, self.is_train_data)
         
@@ -62,14 +62,13 @@ class CustomImageDataset(Dataset):
             return img, lbl
 
     def roi_crop(self, img, lbl):
-        
-        x, y, w, h = 400, 400, 540, 380
-        
+
+        x, y, w, h = 178, 24, 860, 860
+
         img = img[y : y+h, x : x+w]
         lbl = lbl[y : y+h, x : x+w]
-        
-        return img, lbl
 
+        return img, lbl
 
     class_names = np.array([
         'background',

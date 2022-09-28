@@ -4,6 +4,16 @@ import cv2
 from sklearn.model_selection import train_test_split
 
 
+def roi_crop(img, lbl):
+    x, y, w, h = 178, 24, 860, 860
+
+    img = img[y: y + h, x: x + w]
+    lbl = lbl[y: y + h, x: x + w]
+
+    return img, lbl
+
+
+
 def mkdir_f(path):
 
     if not os.path.exists(path):
@@ -85,8 +95,10 @@ def data_gather_one_dir():
             mask_ = cv2.imread(os.path.join(mask_path, mask_file, mask), cv2.IMREAD_COLOR)
             img_ = cv2.imread(os.path.join(image_path, image_file, img), cv2.IMREAD_COLOR)
 
-            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE', 'all_data', '%04d.png'%count), img_)
-            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', 'all_data', '%04d.png'%count), mask_)
+            img_, mask_ = roi_crop(img_, mask_)
+
+            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE', 'all_data', f'{image_file}_%04d.png'%count), img_)
+            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', 'all_data', f'{mask_file}_%04d.png'%count), mask_)
 
             count+=1
 
@@ -201,14 +213,130 @@ def data_final_evaluate_using_visualization(test_image_path, test_mask_path):
     cv2.destroyAllWindows()
 
 
+def separated_image(image_path):
+    image_case_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), image_path)
+    case_folder_list = os.listdir(image_case_path)
+
+    for case_folder in case_folder_list:
+        each_case_folder_path = os.path.join(image_case_path, case_folder)
+        each_case_folder_list = os.listdir(each_case_folder_path)
+
+        for view in each_case_folder_list:
+            file_path = os.path.join(each_case_folder_path, view)
+            image_list = os.listdir(file_path)
+            image_list = [file for file in image_list if file.endswith("png")]
+
+            save_path = os.path.join(each_case_folder_path, 'new_'+view)
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+
+            for i in range(2000):
+
+                if case_folder == 'case5':
+                    if (74 < i < 106):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (310 < i < 322):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (438 < i < 448):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                if case_folder == 'case6':
+                    if (42 < i < 61):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (321 < i < 332):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (479 < i < 493):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                if case_folder == 'case7':
+                    if (73 < i < 96):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (259 < i < 276):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                    elif (409 < i < 427):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+                if case_folder == 'case8':
+                    if (62 < i < 78):
+                        img = cv2.imread(os.path.join(file_path, image_list[i]), cv2.IMREAD_COLOR)
+                        cv2.imwrite(os.path.join(save_path, image_list[i]), img)
+
+
+def crop_data():
+    """
+    Each case is splited into folders. So gather them in one folder and match the names of image and mask.
+    """
+
+    mkdir_f(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', 'crop'))
+    mkdir_f(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE', 'crop'))
+
+    mask_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK')
+    image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE')
+
+    mask_file_list = os.listdir(mask_path)
+    image_file_list = os.listdir(image_path)
+
+    sort_f = lambda f: int(''.join(filter(str.isdigit, f)))
+
+    count = 0
+    for mask_file, image_file in zip(mask_file_list, image_file_list):
+
+        if mask_file == 'all_data' or image_file == 'all_data':
+            continue
+
+        mkdir_f(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', 'crop', image_file))
+        mkdir_f(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE', 'crop', image_file))
+
+        mask_list = os.listdir(os.path.join(mask_path, mask_file))
+        mask_list = [file for file in mask_list if file.endswith(".png")]
+        mask_list.sort(key=sort_f)
+
+        img_list = os.listdir(os.path.join(image_path, image_file))
+        img_list = [file for file in img_list if file.endswith(".png")]
+        img_list.sort(key=sort_f)
+
+        for mask, img in zip(mask_list, img_list):
+            mask_ = cv2.imread(os.path.join(mask_path, mask_file, mask), cv2.IMREAD_COLOR)
+            img_ = cv2.imread(os.path.join(image_path, image_file, img), cv2.IMREAD_COLOR)
+
+            img_, mask_ = roi_crop(img_, mask_)
+
+            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'IMAGE', 'crop', image_file,
+                                     f'{image_file}_%04d.png' % count), img_)
+            cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'MASK', 'crop', image_file,
+                                     f'{mask_file}_%04d.png' % count), mask_)
+
+            count += 1
+
+
+
 
 if __name__ == '__main__':
     
-    data_final_evaluate_using_visualization()
+    # data_final_evaluate_using_visualization()
 
+    # separated_image("IMAGE/tt")
 
     # data_gather_one_dir()
+
     # train_valid_test_split_f()
+
+    crop_data()
 
 
 

@@ -1,6 +1,7 @@
 import torch
 from torch.optim.lr_scheduler import *
 from torch.optim.lr_scheduler import _LRScheduler
+from torch_ema import ExponentialMovingAverage
 import math
 
 
@@ -85,6 +86,9 @@ def prepare_optim(opts, model):
         checkpoint = torch.load(opts.resume)
         optim.load_state_dict(checkpoint['optim_state_dict'])
 
+    # exponential moving average
+    ema = ExponentialMovingAverage(model.parameters(), decay=0.995)
+
 
 
     # learning_rate scheduler
@@ -92,7 +96,7 @@ def prepare_optim(opts, model):
     # lr_schedule = Learning_rate_scheduler(optim, opts)
     if opts.lr_scheduler == "steplr":
 
-        scheduler = StepLR(optim, step_size= 4000, gamma=0.5)
+        scheduler = StepLR(optim, step_size= 2500, gamma=0.5)
 
     elif opts.lr_scheduler == 'CosineAnnealingWarmRestarts':
         """
@@ -114,4 +118,4 @@ def prepare_optim(opts, model):
         print("Could not input argment LR_scheduler.")
         raise
 
-    return optim, scheduler
+    return optim, scheduler, ema

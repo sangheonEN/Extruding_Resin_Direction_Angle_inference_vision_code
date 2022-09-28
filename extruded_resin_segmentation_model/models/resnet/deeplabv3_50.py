@@ -3,6 +3,7 @@ from torchvision.models.segmentation.deeplabv3 import DeepLabHead
 import torch.nn as nn
 import torch
 
+
 class Deeplabv3(nn.Module):
     def __init__(self, n_class=21):
         super(Deeplabv3, self).__init__()
