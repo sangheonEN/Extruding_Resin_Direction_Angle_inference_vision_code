@@ -355,7 +355,7 @@ def side_pca_angle_direction_change(img, img_path, angle_list):
     left_angle = np.rad2deg(left_angle)
     right_angle = np.rad2deg(right_angle)
 
-    change_direction_hyperparameters = 180 # direction change = 180, not change = 0
+    change_direction_hyperparameters = 0 # direction change = 180, not change = 0
 
     final_angle = (left_angle + right_angle)/2 + change_direction_hyperparameters
 
@@ -401,7 +401,7 @@ def side_pca_angle_direction_change(img, img_path, angle_list):
         final_angle = final_angle + 360
 
     cv2.putText(rgb, f"final_angle: {round(final_angle, 2)}", (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2)
-    cv2.imwrite(f"./pca_angle/front/{img_path}", rgb)
+    cv2.imwrite(f"./pca_angle/side/{img_path}", rgb)
 
     angle_list.append(final_angle)
 
