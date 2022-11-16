@@ -22,21 +22,21 @@ y5 = np.ones((x5.shape)) * 1.37
 
 fig, ax = plt.subplots(figsize=(5, 5))
 
-ax.set_xlim([0, 3])
+ax.set_xlim([0, 1.5])
 ax.set_ylim([0, 3])
 
-ax.plot(x, y, c='red')
+ax.plot(x, y, c='black')
 ax.plot(x0, y0, c='blue', linewidth=1.0, linestyle = '--')
-ax.plot(x1, y0, c='green', linewidth=1.0, linestyle = '--')
+ax.plot(x1, y0, c='red', linewidth=1.0, linestyle = '--')
 ax.plot(x4, y4, c='blue', linewidth=1.0, linestyle = '--')
-ax.plot(x5, y5, c='green', linewidth=1.0, linestyle = '--')
-ax.scatter(x2, y2, c='green', s=20)
+ax.plot(x5, y5, c='red', linewidth=1.0, linestyle = '--')
+ax.scatter(x2, y2, c='red', s=20)
 ax.scatter(x3, y3, c='blue', s=20)
-ax.text(x2+0.1, y2, s= str((x2, round(y2, 2))), c='green')
+ax.text(x2+0.1, y2, s= str((x2, round(y2, 2))), c='red')
 ax.text(x3+0.1, y3, s= str((x3, round(y3, 2))), c='blue')
 
 
-fig.savefig("./my_function.png")
+fig.savefig("./weight_function.png")
 
 #%%
 import matplotlib.pyplot as plt
@@ -142,7 +142,7 @@ ax.set_ylabel("loss")
 # ax.text(x3+0.1, y3, s= str((x3, round(y3, 2))), c='blue')
 
 
-fig.savefig("./focal.png")
+fig.savefig("./BFL.png")
 
 #%%
 
