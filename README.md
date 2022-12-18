@@ -47,9 +47,14 @@
        Cross Balancing Loss, Cross Entropy, Focal Loss, Boundary Focal Loss result box plot.
 </div>
 
-![image](https://user-images.githubusercontent.com/69128174/208290860-622e011e-2856-43d8-966d-97481a5bee83.png)
+![image](https://user-images.githubusercontent.com/69128174/208291076-307be0cb-44d2-44ca-b2d2-2f82666de1fe.png)
 <dir align="center">
        외곽선분 영역 Left, Right Line 분할 결과 비교 그래프.
+</div>
+
+![image](https://user-images.githubusercontent.com/69128174/208291105-70784fde-5927-4c27-b3b1-1aa8171ca050.png)
+<dir align="center">
+       Focal Loss와 Boundary Focal Loss로 추론 결과를 정답 데이터를 기반으로 한 압출 수지 진행 방향 각도와 MAE 오차 비교 결과
 </div>
 
 ## 6. Inference Result Image
