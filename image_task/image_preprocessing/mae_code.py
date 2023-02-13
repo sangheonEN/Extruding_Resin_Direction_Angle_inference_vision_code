@@ -1,6 +1,12 @@
 from sklearn.metrics import mean_squared_error
 import numpy as np
 
+GT = np.array([267,348.17,281.02,260.45,230.5,180.88,132.72,90.59,46.47])
+predicted_value = np.array([267.01,349.8,280.77,258,226.84,180.18,130.19,90.97,48.27])
+
+mse  = mean_squared_error(GT, predicted_value)
+
+
 # prediction value 1 best, 2 worst
 
 # 14 frame
