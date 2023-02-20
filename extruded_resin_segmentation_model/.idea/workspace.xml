@@ -10,6 +10,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="2FyOD08zesvdOPQIRShJlk0oIgl" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -21,7 +24,7 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/jteks/Documents/Github/Die_Centering_Project/extruded_resin_segmentation_model"
+    "last_opened_file_path": "C:/Users/jteks/Documents/Github/for_coding_test/coding_test"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -33,6 +36,8 @@
       <option name="presentableId" value="Default" />
       <updated>1665460734206</updated>
       <workItem from="1665460735700" duration="388000" />
+      <workItem from="1675991725575" duration="133000" />
+      <workItem from="1676191122269" duration="15000" />
     </task>
     <servers />
   </component>
