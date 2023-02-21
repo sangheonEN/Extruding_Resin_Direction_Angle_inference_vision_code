@@ -100,9 +100,11 @@ ce_dot = -1*math.log(p1)
 # x5 = np.arange(-3., 1., 0.01, dtype=float)
 # y5 = np.ones((x5.shape)) * 1.37
 
-
+fontdict={'fontname': 'Times New Roman',
+          'fontsize': 14}
 fig, ax = plt.subplots(figsize=(5, 5))
-
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['font.size'] = 12 # 개별적용 - plt.yticks(fontsize=20)
 # b = np.arange(0.0, 1.0, 0.2)
 #
 # a = list()
@@ -133,8 +135,8 @@ ax.text(p1+0.05, erfl_dot3, s= str((p1, round(erfl_dot3, 2))), c='purple')
 # 범례
 # ax.legend()
 # 축제목
-ax.set_xlabel("probability of ground truth class")
-ax.set_ylabel("loss")
+ax.set_xlabel("probability of ground truth class", **fontdict)
+ax.set_ylabel("loss", **fontdict)
 
 # ax.plot(x, y3, c='black')
 # ax.plot(x0, y0, c='blue', linewidth=1.0, linestyle = '--')
