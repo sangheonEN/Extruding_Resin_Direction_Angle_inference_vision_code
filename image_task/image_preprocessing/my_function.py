@@ -48,15 +48,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 
-x = np.arange(0.000001, 1., 0.01, dtype=float)
+x = np.arange(0.00000001, 1., 0.01, dtype=float)
 p1 = 0.35
 p2 = 0.88
-sig1 = 0.0
+sig1 = 0
 sig2 = 1.0
 # w1 = (1+(1/(math.exp(1)**sig1))) * (1 - (sig1 / (math.exp(1)+1)))
 # w2 =(1+(1/(math.exp(1)**sig2))) * (1 - (sig2 / (math.exp(1)+1)))
+# 내가 고안한 가중치 슬로프 더 크게 slop 승수가 높을수록 sigma 0에서 큰 값을 가짐
+
+
 w1 = 1/np.exp(sig1) + 1
 w2 = 1/np.exp(sig2) + 1
+
+
 
 print(w1, w2)
 
@@ -152,4 +157,56 @@ ax.set_ylabel("loss", **fontdict)
 fig.savefig("./BFL.png")
 
 #%%
+import matplotlib.pyplot as plt
+import numpy as np
+import math
 
+x = np.arange(0.00000001, 1., 0.01, dtype=float)
+p1 = 0.35
+p2 = 0.88
+sig1 = 0
+sig2 = 1.0
+
+# 가중치 슬로프 더 크게 slop 승수가 높을수록 sigma 0에서 큰 값을 가짐
+slop = 2
+
+w1 = (((1 / np.exp(sig1)) + 1) ** slop) * ((1 - (sig1 / (np.exp(1) + 1))) ** slop)
+w2 = (((1 / np.exp(sig2)) + 1) ** slop) * ((1 - (sig2 / (np.exp(1) + 1))) ** slop)
+
+print(w1, w2)
+
+focal = [(-(1-num)**2*math.log(num)) for num in x]
+erfl_sig1 = [(-w1*(1-num)**2*math.log(num)) for num in x]
+erfl_sig2 = [(-w2*(1-num)**2*math.log(num)) for num in x]
+ce = [-1*math.log(num) for num in x]
+erfl_dot = -w1*(1-p2)**2*math.log(p2)
+erfl_dot2 = -w2*(1-p1)**2*math.log(p1)
+erfl_dot3 = -w1*(1-p1)**2*math.log(p1)
+erfl_dot4 = -w2*(1-p2)**2*math.log(p2)
+ce_dot = -1*math.log(p1)
+
+fontdict={'fontname': 'Times New Roman',
+          'fontsize': 14}
+fig, ax = plt.subplots(figsize=(5, 5))
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['font.size'] = 12 # 개별적용 - plt.yticks(fontsize=20)
+
+ax.set_xlim([0.0, 1.0])
+ax.set_ylim([0.0, 5])
+
+ax.plot(x, erfl_sig1, c='purple', linestyle='dashed')
+ax.plot(x, erfl_sig2, c='green', linestyle='dashed')
+ax.fill_between(x, erfl_sig1, erfl_sig2, color='yellow', alpha=0.5)
+ax.scatter(p1, erfl_dot2, c="green")
+ax.scatter(p1, erfl_dot3, c="purple")
+ax.scatter(p2, erfl_dot)
+ax.scatter(p2, erfl_dot4)
+ax.text(p1+0.05, erfl_dot2+0.05, s= str((p1, round(erfl_dot2, 2))), c='green')
+ax.text(p1+0.05, erfl_dot3, s= str((p1, round(erfl_dot3, 2))), c='purple')
+# 축제목
+ax.set_xlabel("probability of ground truth class", **fontdict)
+ax.set_ylabel("loss", **fontdict)
+
+
+
+fig.savefig("./slop_BFL.png")
