@@ -26,9 +26,11 @@ y5 = np.ones((x5.shape)) * 1
 
 
 fig, ax = plt.subplots(figsize=(5, 5))
+plt.rcParams['font.size'] = 12 # 개별적용 - plt.yticks(fontsize=20)
 
-ax.set_xlim([0, 3])
+ax.set_xlim([0, 1.5])
 ax.set_ylim([0, 3])
+ax.set_xticks([0, 0.5, 1])
 
 ax.plot(x, y, c='black')
 ax.plot(x0, y0, c='blue', linewidth=1.0, linestyle = '--')
