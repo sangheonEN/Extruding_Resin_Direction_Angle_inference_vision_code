@@ -561,101 +561,171 @@ def three_points_circle_angle(img):
     return left_angle, right_angle
 
 
+def mkdir_f(path):
+
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+        return
+
+
+def angle_vis(img, cnt, case):
+    # 이미지 좌표 y좌표 평행이동 및 y축 반전
+
+    img_label_index = np.unique(img)
+
+    if len(img_label_index) < 4:
+        return
+
+    rgb = visualization(img)
+
+    exflusion = np.where(img == img_label_index[1])
+    left_curve = np.where(img == img_label_index[2])
+    right_curve = np.where(img == img_label_index[3])
+
+    left_curve_h = left_curve[0]
+    # y 축 기준으로 flip
+    left_curve_h *= -1
+    left_curve_w = left_curve[1]
+
+    right_curve_h = right_curve[0]
+    # y 축 기준으로 flip
+    right_curve_h *= -1
+    right_curve_w = right_curve[1]
+
+    # left, right 좌표 array 데이터
+    left_curve_array = np.array([left_curve_w, left_curve_h], dtype=np.float64).transpose(1, 0)
+    right_curve_array = np.array([right_curve_w, right_curve_h], dtype=np.float64).transpose(1, 0)
+
+    # pca
+    mean = np.empty((0))
+    mean_left, eigenvectors_left, eigenvalues_left = cv2.PCACompute2(left_curve_array, mean)
+    mean_right, eigenvectors_right, eigenvalues_right = cv2.PCACompute2(right_curve_array, mean)
+
+    # 고유벡터와 x축 사이 angle 추출
+    left_angle = atan2(eigenvectors_left[0, 1], eigenvectors_left[0, 0])
+    right_angle = atan2(eigenvectors_right[0, 1], eigenvectors_right[0, 0])
+    left_angle = int(np.rad2deg(left_angle))
+    right_angle = int(np.rad2deg(right_angle))
+
+
+    left_cntr = (int(mean_left[0, 0]), int(mean_left[0, 1]))
+    right_cntr = (int(mean_right[0, 0]), int(mean_right[0, 1]))
+
+
+    cv2.circle(rgb, left_cntr, 3, (255, 0, 255), 2)
+    cv2.circle(rgb, right_cntr, 3, (255, 0, 255), 2)
+    p1_left = (left_cntr[0] + 0.02 * eigenvectors_left[0, 0] * eigenvalues_left[0, 0], left_cntr[1] + 0.02 * eigenvectors_left[0, 1] * eigenvalues_left[0, 0])
+    # p2_left = (left_cntr[0] - 0.02 * eigenvectors_left[1, 0] * eigenvalues_left[1, 0], left_cntr[1] - 0.02 * eigenvectors_left[1, 1] * eigenvalues_left[1, 0])
+
+    p1_right = (right_cntr[0] + 0.02 * eigenvectors_right[0, 0] * eigenvalues_right[0, 0],
+          right_cntr[1] + 0.02 * eigenvectors_right[0, 1] * eigenvalues_right[0, 0])
+    # p2_right = (left_cntr[0] - 0.02 * eigenvectors_right[1, 0] * eigenvalues_right[1, 0],
+    #       right_cntr[1] - 0.02 * eigenvectors_right[1, 1] * eigenvalues_right[1, 0])
+
+    left_angle = angle_(left_cntr, p1_left)
+    # drawAxis(rgb, left_cntr, p2_left, (255, 255, 0), 10)
+
+    right_angle = angle_(right_cntr, p1_right)
+    # drawAxis(rgb, right_cntr, p2_right, (255, 255, 0), 10)
+
+    left_angle = np.rad2deg(left_angle)
+    right_angle = np.rad2deg(right_angle)
+
+    change_direction_hyperparameters = 0 # direction change = 180, not change = 0
+
+    final_angle = (left_angle + right_angle)/2 + change_direction_hyperparameters
+
+    if left_angle < 0:
+        left_angle = left_angle + 360
+
+    if right_angle < 0:
+        right_angle = right_angle + 360
+
+    # cv2.putText(rgb, f"left_angle: {left_angle}", (0, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+    # cv2.putText(rgb, f"right_angle: {right_angle}", (0, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2)
+
+
+    mean_exflusion_h = int(np.mean(exflusion[0]))
+    mean_exflusion_w = int(np.mean(exflusion[1]))
+
+    y_rotated = mean_exflusion_h + int(np.sin(np.pi / -180 * final_angle)*600)
+    x_rotated = mean_exflusion_w + int(np.cos(np.pi / -180 * final_angle)*600)
+
+    # 기존 좌표와 이미지 끝에 교차된 점 까지를 이은 직선을 그립니다.
+    cv2.line(rgb, (mean_exflusion_w, mean_exflusion_h), (x_rotated, y_rotated), (0, 255, 0), 2, cv2.LINE_AA)
+
+    angle = atan2(float(mean_exflusion_h - y_rotated), float(mean_exflusion_w - x_rotated)) # angle in radians
+
+    # create the arrow hooks
+    mean_exflusion_w = x_rotated + 9 * cos(angle + pi / 4)
+    mean_exflusion_h = y_rotated + 9 * sin(angle + pi / 4)
+    cv2.line(rgb, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 5, cv2.LINE_AA)
+    mean_exflusion_w = x_rotated + 9 * cos(angle - pi / 4)
+    mean_exflusion_h = y_rotated + 9 * sin(angle - pi / 4)
+    cv2.line(rgb, (int(mean_exflusion_w), int(mean_exflusion_h)), (int(x_rotated), int(y_rotated)), (0, 255, 0), 5, cv2.LINE_AA)
+
+
+    # # create the arrow hooks
+    # p[0] = q[0] + 9 * cos(angle + pi / 4)
+    # p[1] = q[1] + 9 * sin(angle + pi / 4)
+    # cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv.LINE_AA)
+    # p[0] = q[0] + 9 * cos(angle - pi / 4)
+    # p[1] = q[1] + 9 * sin(angle - pi / 4)
+    # cv.line(img, (int(p[0]), int(p[1])), (int(q[0]), int(q[1])), colour, 1, cv.LINE_AA)
+
+    if final_angle < 0:
+        final_angle = final_angle + 360
+
+    cv2.putText(rgb, f"Heading angle: {round(final_angle, 2)}", (60, 60), cv2.FONT_HERSHEY_COMPLEX, fontScale=2,
+                color=(255, 255, 255), thickness=2)
+
+    mkdir_f(os.path.join(os.path.dirname(os.path.abspath(
+        __file__)), "pca_angle", 'anno', case))
+    cv2.imwrite(os.path.join(os.path.dirname(os.path.abspath(
+        __file__)), "pca_angle", 'anno', case, '%04d.png' % cnt), rgb)
+
+    mkdir_f(os.path.join(os.path.dirname(os.path.abspath(
+        __file__)), "pca_angle", 'anno', case, 'angle_text'))
+
+    if not os.path.exists(os.path.join(os.path.dirname(os.path.abspath(
+        __file__)), "pca_angle", 'anno', case, 'angle_text', "angle_text_file.txt")):
+
+        file = open(os.path.join(os.path.dirname(os.path.abspath(
+        __file__)), "pca_angle", 'anno', case, 'angle_text', "angle_text_file.txt"), "w")
+    else:
+
+        file = open(os.path.join(os.path.dirname(os.path.abspath(
+            __file__)), "pca_angle", 'anno', case, 'angle_text', "angle_text_file.txt"), "a")
+
+    file.write(str(round(final_angle, 2)))
+    file.write("\n")
+    file.close()
+
+
 if __name__ == "__main__":
 
     print(os.path.dirname(os.path.abspath(__file__)))
 
-    mask_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pred_curve")
+    test_mask_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data')
 
-    image_list = os.listdir(mask_file_path)
+    test_mask_data_list = os.listdir(test_mask_path)
+    test_mask_data_list = [file for file in test_mask_data_list if file.startswith("case")]
 
-    for image_path in image_list:
+    sort_function = lambda f: int(''.join(filter(str.isdigit, f)))
 
-        angle_list = list()
+    for mask in test_mask_data_list:
+        test_mask_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_data', mask)
 
-        # img shape: h, w, c
-        img = cv2.imread(os.path.join(mask_file_path, image_path), cv2.IMREAD_GRAYSCALE)
+        mask_list = os.listdir(test_mask_path)
+        mask_list = [file for file in mask_list if file.endswith('png')]
+        mask_list.sort(key=sort_function)
+        cnt = 0
+        for m in mask_list:
+            img = cv2.imread(os.path.join(test_mask_path, m), cv2.IMREAD_GRAYSCALE)
 
-        # left or right 좌표 없을때 continue
-        img_label_index = np.unique(img)
-
-        if len(img_label_index) < 4:
-            continue
-
-        # 세점을 이용한 circle 각도 추출
-        # left_angle, right_angle = three_points_circle_angle(img)
-
-        # pca를 이용한 외곽선 점 데이터 고유벡터 선형 각도 추출
-        # side
-        # left_angle, right_angle = side_pca_angle(img, image_path)
-        # front
-        # left_angle, right_angle = front_pca_angle_case0234(img, image_path)
-
-        # front_pca_angle_direction_change, side_pca_angle_direction_change
-
-        left_angle, right_angle = side_pca_angle_direction_change(img, image_path, angle_list)
-
-        # print(f"left_angle: {left_angle}\n")
-        # print(f"right_angle: {right_angle}\n")
+            angle_vis(img, cnt, mask)
+            cnt += 1
 
 
 
-
-
-
-    #
-    # # angle = atan2(eigenvectors[0, 1], eigenvectors[0, 0])  # orientation in radians
-    #
-    # # circle_left = plt.Circle((left_cntr[0], left_cntr[1]), 1, color='r', fill=False)
-    # # circle_right = plt.Circle((right_cntr[0], right_cntr[1]), 1, color='r', fill=False)
-    #
-    # fig, ax = plt.subplots(figsize=(10, 10))
-    #
-    # ax.set_xlim([min(left_curve_array[:, 0] - 50), max(right_curve_array[:, 0]) + 50])
-    # ax.set_ylim([min(left_curve_array[:, 1] - 50), max(right_curve_array[:, 1] + 50)])
-    #
-    # ax.scatter(left_curve_array[:, 0], left_curve_array[:, 1], s=2, c='red')
-    # ax.scatter(right_curve_array[:, 0], right_curve_array[:, 1], s=2, c='blue')
-    # # ax.add_patch(circle_left)
-    # # ax.add_patch(circle_right)
-    # # ax.plot([int(left_order_curve_array[0][0]), int(left_order_curve_array[0][0] + eigenvectors_left[0, 0] * scale_factor)], [int(left_order_curve_array[0][1]), int(left_order_curve_array[0][1] - eigenvectors_left[0, 1] * scale_factor)])
-    # # ax.plot([int(right_order_curve_array[0][0]), int(right_order_curve_array[0][0] + eigenvectors_right[0, 0] * scale_factor)], [int(right_order_curve_array[0][1]), int(right_order_curve_array[0][1] - eigenvectors_right[0, 1] * scale_factor)])
-    #
-    # ax.text(left_cntr[0]+30, left_cntr[1]+30, f"left_angle: {left_angle}", fontsize=10)
-    # ax.text(right_cntr[0]+30, right_cntr[1]+30, f"right_angle: {right_angle}", fontsize=10)
-    #
-    # if not os.path.exists("./pca_angle"):
-    #     os.makedirs("./pca_angle")
-    #
-    # if not os.path.exists("./pca_angle/front"):
-    #     os.makedirs("./pca_angle/front")
-    #
-    # fig.savefig(f"./pca_angle/front/{img_path}")
-
-    # # visualization
-    # # Store the center of the object (x, y)
-    # left_cntr = (int(mean_left[0, 0]), int(mean_left[0, 1]))
-    # right_cntr = (int(mean_right[0, 0]), int(mean_right[0, 1]))
-    #
-    # scale_factor = 30
-    #
-    # # Draw the principal components
-    # cv2.circle(img, left_cntr, 3, (255, 0, 255), 2)
-    # # 이미지상 y축은 아래로 양수니까 위쪽으로 선을 긋기 위해 eigenvector[0, 1] y값은 원점에 -로 더해주어 스케일 업 해준다.
-    # cv2.line(img, (int(left_cntr[0]), int(left_cntr[1])),
-    #          (int(left_cntr[0] + eigenvectors_left[0, 0] * scale_factor), int(left_cntr[1] - eigenvectors_left[0, 1] * scale_factor)),
-    #          (0, 0, 255), 1, cv2.LINE_AA)
-    # cv2.putText(img, f"Rotation_ Angle {str(left_angle)}", (left_cntr[0] + 20, left_cntr[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-    #             (0, 0, 255), 1, cv2.LINE_AA)
-    #
-    #
-    # # Draw the principal components
-    # cv2.circle(img, right_cntr, 3, (255, 0, 255), 2)
-    # # 이미지상 y축은 아래로 양수니까 위쪽으로 선을 긋기 위해 eigenvector[0, 1] y값은 원점에 -로 더해주어 스케일 업 해준다.
-    # cv2.line(img, (int(right_cntr[0]), int(right_cntr[1])),
-    #          (int(right_cntr[0] + eigenvectors_right[0, 0] * scale_factor), int(right_cntr[1] - eigenvectors_right[0, 1] * scale_factor)),
-    #          (255, 0, 0), 1, cv2.LINE_AA)
-    # cv2.putText(img, f"Rotation_ Angle {str(right_angle)}", (right_cntr[0] + 20, right_cntr[1] + 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
-    #             (0, 0, 255), 1, cv2.LINE_AA)
-    #
-    # cv2.imwrite("./pca_angle.png", img)
