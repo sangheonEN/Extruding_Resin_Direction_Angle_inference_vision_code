@@ -203,9 +203,9 @@ plt.rcParams['font.size'] = 12 # 개별적용 - plt.yticks(fontsize=20)
 ax.set_xlim([0.0, 1.0])
 ax.set_ylim([0.0, 5])
 
-ax.plot(x, erfl_sig1, c='purple', linestyle='dashed')
-ax.plot(x, erfl_sig2, c='green', linestyle='dashed')
-ax.plot(x, erfl_sig3, c='blue', linestyle='dashed')
+ax.plot(x, erfl_sig1, c='purple', linestyle='dashed', label='ERFL (σ=0)')
+ax.plot(x, erfl_sig3, c='blue', linestyle='dashed', label='ERFL (σ=0.5)')
+ax.plot(x, erfl_sig2, c='green', linestyle='dashed', label='ERFL (σ=1)')
 ax.fill_between(x, erfl_sig1, erfl_sig2, color='yellow', alpha=0.5)
 ax.scatter(p1, erfl_dot2, c="green")
 ax.scatter(p1, erfl_dot5, c="blue")
@@ -216,6 +216,14 @@ ax.scatter(p2, erfl_dot6)
 ax.text(p1+0.05, erfl_dot2+0.05, s= str((p1, round(erfl_dot2, 2))), c='green')
 ax.text(p1+0.05, erfl_dot5+0.05, s= str((p1, round(erfl_dot5, 2))), c='blue')
 ax.text(p1+0.05, erfl_dot3, s= str((p1, round(erfl_dot3, 2))), c='purple')
+# 범례
+ax.legend()
+"""
+          legend(
+              (line1, line2, line3),
+              ('label1', 'label2', 'label3'),
+              loc='upper right')
+"""
 # 축제목
 ax.set_xlabel("probability of ground truth class", **fontdict)
 ax.set_ylabel("loss", **fontdict)
