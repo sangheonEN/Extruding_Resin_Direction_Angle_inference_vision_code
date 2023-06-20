@@ -168,23 +168,30 @@ p1 = 0.35
 p2 = 0.88
 sig1 = 0
 sig2 = 1.0
+sig3 = 0.5
 
 # 가중치 슬로프 더 크게 slop 승수가 높을수록 sigma 0에서 큰 값을 가짐
-slop = 2
+slop = 1
 
+# w1 = (((1 / np.exp(sig1)) + 1) ** slop) * ((1 - (sig1 / (np.exp(1) + 1))) ** slop)
+# w2 = (((1 / np.exp(sig2)) + 1) ** slop) * ((1 - (sig2 / (np.exp(1) + 1))) ** slop)
 w1 = (((1 / np.exp(sig1)) + 1) ** slop) * ((1 - (sig1 / (np.exp(1) + 1))) ** slop)
 w2 = (((1 / np.exp(sig2)) + 1) ** slop) * ((1 - (sig2 / (np.exp(1) + 1))) ** slop)
+w3 = (((1 / np.exp(sig3)) + 1) ** slop) * ((1 - (sig3 / (np.exp(1) + 1))) ** slop)
 
 print(w1, w2)
 
 focal = [(-(1-num)**2*math.log(num)) for num in x]
 erfl_sig1 = [(-w1*(1-num)**2*math.log(num)) for num in x]
 erfl_sig2 = [(-w2*(1-num)**2*math.log(num)) for num in x]
+erfl_sig3 = [(-w3*(1-num)**2*math.log(num)) for num in x]
 ce = [-1*math.log(num) for num in x]
 erfl_dot = -w1*(1-p2)**2*math.log(p2)
 erfl_dot2 = -w2*(1-p1)**2*math.log(p1)
+erfl_dot5 = -w3*(1-p1)**2*math.log(p1)
 erfl_dot3 = -w1*(1-p1)**2*math.log(p1)
 erfl_dot4 = -w2*(1-p2)**2*math.log(p2)
+erfl_dot6 = -w3*(1-p2)**2*math.log(p2)
 ce_dot = -1*math.log(p1)
 
 fontdict={'fontname': 'Times New Roman',
@@ -198,12 +205,16 @@ ax.set_ylim([0.0, 5])
 
 ax.plot(x, erfl_sig1, c='purple', linestyle='dashed')
 ax.plot(x, erfl_sig2, c='green', linestyle='dashed')
+ax.plot(x, erfl_sig3, c='blue', linestyle='dashed')
 ax.fill_between(x, erfl_sig1, erfl_sig2, color='yellow', alpha=0.5)
 ax.scatter(p1, erfl_dot2, c="green")
+ax.scatter(p1, erfl_dot5, c="blue")
 ax.scatter(p1, erfl_dot3, c="purple")
 ax.scatter(p2, erfl_dot)
 ax.scatter(p2, erfl_dot4)
+ax.scatter(p2, erfl_dot6)
 ax.text(p1+0.05, erfl_dot2+0.05, s= str((p1, round(erfl_dot2, 2))), c='green')
+ax.text(p1+0.05, erfl_dot5+0.05, s= str((p1, round(erfl_dot5, 2))), c='blue')
 ax.text(p1+0.05, erfl_dot3, s= str((p1, round(erfl_dot3, 2))), c='purple')
 # 축제목
 ax.set_xlabel("probability of ground truth class", **fontdict)
