@@ -632,7 +632,7 @@ def angle_vis(img, cnt, case):
     left_angle = np.rad2deg(left_angle)
     right_angle = np.rad2deg(right_angle)
 
-    change_direction_hyperparameters = 0 # direction change = 180, not change = 0
+    change_direction_hyperparameters = 180 # direction change = 180, not change = 0
 
     final_angle = (left_angle + right_angle)/2 + change_direction_hyperparameters
 
@@ -653,7 +653,7 @@ def angle_vis(img, cnt, case):
     x_rotated = mean_exflusion_w + int(np.cos(np.pi / -180 * final_angle)*600)
 
     # 기존 좌표와 이미지 끝에 교차된 점 까지를 이은 직선을 그립니다.
-    cv2.line(rgb, (mean_exflusion_w, mean_exflusion_h), (x_rotated, y_rotated), (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.line(rgb, (mean_exflusion_w, mean_exflusion_h), (x_rotated, y_rotated), (0, 255, 0), 10, cv2.LINE_AA)
 
     angle = atan2(float(mean_exflusion_h - y_rotated), float(mean_exflusion_w - x_rotated)) # angle in radians
 
@@ -677,8 +677,8 @@ def angle_vis(img, cnt, case):
     if final_angle < 0:
         final_angle = final_angle + 360
 
-    cv2.putText(rgb, f"Heading angle: {round(final_angle, 2)}", (60, 60), cv2.FONT_HERSHEY_COMPLEX, fontScale=2,
-                color=(255, 255, 255), thickness=2)
+    cv2.putText(rgb, f"Heading angle: {round(final_angle, 2)}", (50, 70), cv2.FONT_HERSHEY_COMPLEX, fontScale=2,
+                color=(255, 255, 255), thickness=3)
 
     mkdir_f(os.path.join(os.path.dirname(os.path.abspath(
         __file__)), "pca_angle", 'anno', case))
