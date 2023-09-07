@@ -238,30 +238,55 @@ class Binary_proc:
 
         img = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_COLOR)
 
-        # x, y, w, h = 300, 265, 674, 588
-        # crop = gray[y: y+h, x:x+w]
+        # image preprocessing
 
         blur = cv2.GaussianBlur(img, (5, 5), 0)
 
         gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
-        ret, blur_img_binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        edge = cv2.Canny(gray, 50, 150)
 
+        det = cv2.cvtColor(edge, cv2.COLOR_GRAY2BGR)
+
+        x, y = 350, 360
+        w, h = 130, 170
+
+        cropped_img = edge[y: y + h, x: x + w]
+        cropped_color_img = det[y: y + h, x: x + w]
+
+        # ret, blur_img_binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
         # Hough Transform
-        minLineLength = 100
+        minLineLength = 80
         maxLineGap = 1
+        # cv2.HoughLinesP(검출 이미지, 거리, 각도, 임곗값, 최소 선 길이, 최대 선 간격)
+        lines = cv2.HoughLinesP(edge, 50, np.pi / 180, 15, minLineLength, maxLineGap)
+        lines_crop = cv2.HoughLinesP(cropped_img, 50, np.pi / 180, 15, minLineLength, maxLineGap)
 
-        lines = cv2.HoughLinesP(blur_img_binary, 1, np.pi / 180, 15, minLineLength, maxLineGap)
+        # lines -> [[start x1, start y1, end x2, end y2], ...]
+        if lines is not None:
+            for x in range(0, len(lines)):
+                for x1, y1, x2, y2 in lines[x]:
+                    cv2.line(det, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+        else:
+            print("not found lines")
+            raise
 
-        for x in range(0, len(lines)):
-            for x1, y1, x2, y2 in lines[x]:
-                cv2.line(gray, (x1, y1), (x2, y2), (0, 128, 0), 2)
+        if lines_crop is not None:
+            for x in range(0, len(lines_crop)):
+                for x1, y1, x2, y2 in lines_crop[x]:
+                    cv2.line(cropped_color_img, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+        else:
+            print("not found lines")
+            raise
 
         if not os.path.exists(os.path.join(self.saver_path, "hougn")):
             os.makedirs(os.path.join(self.saver_path, "hougn"))
 
-        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_"+img_n), gray)
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_"+img_n), det)
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_crop_"+img_n), cropped_img)
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_crop_color_"+img_n), cropped_color_img)
+
 
 
     # def binary_threshold_seg(self, img_n):
@@ -626,14 +651,14 @@ if __name__ == "__main__":
 
     # image_path, image_list, save_path
 
-    # binary_proc = Binary_proc(img_list, img_path, saver_path)
-    # binary_proc.proc()
+    binary_proc = Binary_proc(img_list, img_path, saver_path)
+    binary_proc.proc()
 
     # kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
     # kmeans_cluster_1.proc()
 
-    circle = Circle_detec(img_list, img_path, saver_path)
-    circle.proc()
+    # circle = Circle_detec(img_list, img_path, saver_path)
+    # circle.proc()
 
 
     print("End Processing")
