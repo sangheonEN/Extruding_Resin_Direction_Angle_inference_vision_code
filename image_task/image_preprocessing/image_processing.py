@@ -651,11 +651,11 @@ if __name__ == "__main__":
 
     # image_path, image_list, save_path
 
-    binary_proc = Binary_proc(img_list, img_path, saver_path)
-    binary_proc.proc()
+    # binary_proc = Binary_proc(img_list, img_path, saver_path)
+    # binary_proc.proc()
 
-    # kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
-    # kmeans_cluster_1.proc()
+    kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
+    kmeans_cluster_1.proc()
 
     # circle = Circle_detec(img_list, img_path, saver_path)
     # circle.proc()
