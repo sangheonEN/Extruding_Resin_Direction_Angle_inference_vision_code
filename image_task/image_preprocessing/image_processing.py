@@ -11,16 +11,17 @@ class Angle_extract:
     self.proc: eigenvector and X_axis angle extract and img write.
     https://docs.opencv.org/3.4/d1/dee/tutorial_introduction_to_pca.html
     """
+
     def __init__(self, img_name_list, img_path, saver_path):
         self.img_name_list = img_name_list
         self.img_path = img_path
         self.saver_path = saver_path
-    
+
     def angle_f(self, eigenvector):
         # angle calculation
         # atan2(y, x) 에서 예각이면 오른쪽 방향, 둔각이면 왼쪽 방향으로 설정. atan2 각도 설명 ppt참고.
 
-        # y축 기준 역전시키기. eigenvector y 값이 양수 일때  
+        # y축 기준 역전시키기. eigenvector y 값이 양수 일때
         if eigenvector[0, 1] > 0:
             eigenvector[0, 0] = -eigenvector[0, 0]
         elif eigenvector[0, 1] < 0:
@@ -30,19 +31,18 @@ class Angle_extract:
 
         angle = atan2(eigenvector[0, 1], eigenvector[0, 0])
 
-
         return int(np.rad2deg(angle))
 
     def getOrientation(self, pts, img, scale_factor):
 
-        ## [pca]
+        # [pca]
         # Construct a buffer used by the pca analysis
         sz = len(pts)
         data_pts = np.empty((sz, 2), dtype=np.float64)
         for i in range(data_pts.shape[0]):
-            data_pts[i,0] = pts[i,0,0]
-            data_pts[i,1] = pts[i,0,1]
-        
+            data_pts[i, 0] = pts[i, 0, 0]
+            data_pts[i, 1] = pts[i, 0, 1]
+
         # Perform PCA analysis
         """
         cv2.PCACompute2는 data의 공분산 Matrix를 계산하고 이 공분산 Matrix의 eigenvalue, eigenvector를 출력한다.
@@ -57,16 +57,17 @@ class Angle_extract:
         angle = self.angle_f(eigenvectors)
 
         # Store the center of the object (x, y)
-        cntr = (int(mean[0,0]), int(mean[0,1]))
-        ## [pca]
-        
-        ## [visualization]
+        cntr = (int(mean[0, 0]), int(mean[0, 1]))
+        # [pca]
+
+        # [visualization]
         # Draw the principal components
         cv2.circle(img, cntr, 3, (255, 0, 255), 2)
         # 이미지상 y축은 아래로 양수니까 위쪽으로 선을 긋기 위해 eigenvector[0, 1] y값은 원점에 -로 더해주어 스케일 업 해준다.
-        cv2.line(img, (int(cntr[0]), int(cntr[1])), (int(cntr[0] + eigenvectors[0,0] * scale_factor), int(cntr[1] - eigenvectors[0,1] * scale_factor)), (255, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(img, f"Rotation_ Angle {str(angle)}", (cntr[0]+20, cntr[1]+20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1, cv2.LINE_AA)
-
+        cv2.line(img, (int(cntr[0]), int(cntr[1])), (int(cntr[0] + eigenvectors[0, 0] * scale_factor),
+                 int(cntr[1] - eigenvectors[0, 1] * scale_factor)), (255, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, f"Rotation_ Angle {str(angle)}", (
+            cntr[0]+20, cntr[1]+20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
     def proc(self):
         try:
@@ -77,31 +78,31 @@ class Angle_extract:
                 if img is None:
                     print("Error: File not found")
                     exit(0)
-                            
+
                 # Convert image to grayscale
                 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                
+
                 # Convert image to binary
-                _, bw = cv2.threshold(gray, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-                
+                _, bw = cv2.threshold(
+                    gray, 50, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+
                 # Find all the contours in the thresholded image
-                contours, _ = cv2.findContours(bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
-                
+                contours, _ = cv2.findContours(
+                    bw, cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE)
+
                 for i, c in enumerate(contours):
-                    
+
                     # Draw each contour only for visualisation purposes
                     cv2.drawContours(img, contours, i, (0, 0, 255), 2)
-                    
+
                     # Find the orientation of each shape
                     self.getOrientation(c, img, scale_factor=50)
-                    
+
                 # Save the output image to the current directory
                 cv2.imwrite(os.path.join(self.saver_path, img_n), img)
 
         except Exception as e:
             print(f"Error Descript: {e}")
-
-
 
 
 class Histogram:
@@ -111,12 +112,12 @@ class Histogram:
         self.saver_path = saver_path
 
     def histogram_distribution(self, img_n):
-        
+
         src = cv2.imread(os.path.join(self.img_path, img_n))
 
         plt.figure()
         color = ('b', 'g', 'r')
-        channels = cv2.split(src) # b, g, r
+        channels = cv2.split(src)  # b, g, r
         for (ch, col) in zip(channels, color):
             histr = cv2.calcHist([ch], [0], None, [256], [0, 256])
             plt.plot(histr, color=col)
@@ -135,14 +136,13 @@ class Histogram:
 
         y = np.zeros((h, w, c), dtype=np.float32)
 
-        y[:,:,0] = h1
-        y[:,:,1] = h2
-        y[:,:,2] = h3
+        y[:, :, 0] = h1
+        y[:, :, 1] = h2
+        y[:, :, 2] = h3
 
         # rgb = cv2.cvtColor(y, cv2.COLOR_YCrCb2BGR)
 
         cv2.imwrite(os.path.join(self.saver_path, img_n), y)
-
 
     def proc(self):
         try:
@@ -155,13 +155,11 @@ class Histogram:
             print(f"Error Descript: {e}")
 
 
-
 class Binary_proc:
     def __init__(self, img_name_list, img_path, saver_path):
         self.img_name_list = img_name_list
         self.img_path = img_path
         self.saver_path = saver_path
-
 
     def sobel_oper(self, img_n):
 
@@ -172,9 +170,11 @@ class Binary_proc:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         # crop = gray[y: y+h, x:x+w]
 
-        grad_x = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=1, dy=0, ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
+        grad_x = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=1, dy=0,
+                           ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
 
-        grad_y = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=0, dy=1, ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
+        grad_y = cv2.Sobel(gray, ddepth=cv2.CV_16S, dx=0, dy=1,
+                           ksize=3, scale=1, delta=0, borderType=cv2.BORDER_DEFAULT)
 
         abs_grad_x = cv2.convertScaleAbs(grad_x)
         abs_grad_y = cv2.convertScaleAbs(grad_y)
@@ -184,8 +184,8 @@ class Binary_proc:
         if not os.path.exists(os.path.join(self.saver_path, "sobel")):
             os.makedirs(os.path.join(self.saver_path, "sobel"))
 
-        cv2.imwrite(os.path.join(self.saver_path, 'sobel', "sobel_"+img_n), grad)
-
+        cv2.imwrite(os.path.join(self.saver_path,
+                    'sobel', "sobel_"+img_n), grad)
 
     def canny(self, img_n):
 
@@ -194,7 +194,7 @@ class Binary_proc:
         # x, y, w, h = 300, 265, 674, 588
         # crop = gray[y: y+h, x:x+w]
 
-        blur = cv2.GaussianBlur(img,(5,5),0)
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
 
         gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
@@ -203,8 +203,8 @@ class Binary_proc:
         if not os.path.exists(os.path.join(self.saver_path, "canny")):
             os.makedirs(os.path.join(self.saver_path, "canny"))
 
-        cv2.imwrite(os.path.join(self.saver_path, 'canny', "canny_"+img_n), edges)
-
+        cv2.imwrite(os.path.join(self.saver_path,
+                    'canny', "canny_"+img_n), edges)
 
     def sharpening(self, img_n):
 
@@ -213,7 +213,7 @@ class Binary_proc:
         # x, y, w, h = 300, 265, 674, 588
         # crop = gray[y: y+h, x:x+w]
 
-        blur = cv2.GaussianBlur(img,(5,5),0)
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
 
         gray = cv2.cvtColor(blur, cv2.COLOR_BGR2GRAY)
 
@@ -224,15 +224,18 @@ class Binary_proc:
         sharpening1_img = cv2.filter2D(gray, -1, sharpening_mask1)
         sharpening2_img = cv2.filter2D(gray, -1, sharpening_mask2)
 
-        ret, sharp1_img_binary = cv2.threshold(sharpening1_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
-        ret, sharp2_img_binary = cv2.threshold(sharpening2_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        ret, sharp1_img_binary = cv2.threshold(
+            sharpening1_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
+        ret, sharp2_img_binary = cv2.threshold(
+            sharpening2_img, 0, 255, cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU)
 
         if not os.path.exists(os.path.join(self.saver_path, "sharpening")):
             os.makedirs(os.path.join(self.saver_path, "sharpening"))
 
-        cv2.imwrite(os.path.join(self.saver_path, "sharpening", "sharp1_"+img_n), sharp1_img_binary)
-        cv2.imwrite(os.path.join(self.saver_path, "sharpening", "sharp2_"+img_n), sharp2_img_binary)
-
+        cv2.imwrite(os.path.join(self.saver_path, "sharpening",
+                    "sharp1_"+img_n), sharp1_img_binary)
+        cv2.imwrite(os.path.join(self.saver_path, "sharpening",
+                    "sharp2_"+img_n), sharp2_img_binary)
 
     def hougn(self, img_n):
 
@@ -260,14 +263,19 @@ class Binary_proc:
         minLineLength = 80
         maxLineGap = 1
         # cv2.HoughLinesP(검출 이미지, 거리, 각도, 임곗값, 최소 선 길이, 최대 선 간격)
-        lines = cv2.HoughLinesP(edge, 50, np.pi / 180, 15, minLineLength, maxLineGap)
-        lines_crop = cv2.HoughLinesP(cropped_img, 50, np.pi / 180, 15, minLineLength, maxLineGap)
+        # lines = cv2.HoughLinesP(edge, 50, np.pi / 180,
+        #                         15, minLineLength, maxLineGap)
+        lines = cv2.HoughLinesP(edge, 50, np.pi / 30,
+                                150, minLineLength, maxLineGap)
+        lines_crop = cv2.HoughLinesP(
+            cropped_img, 50, np.pi / 180, 15, minLineLength, maxLineGap)
 
         # lines -> [[start x1, start y1, end x2, end y2], ...]
         if lines is not None:
             for x in range(0, len(lines)):
                 for x1, y1, x2, y2 in lines[x]:
-                    cv2.line(det, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+                    cv2.line(det, (x1, y1), (x2, y2),
+                             (0, 0, 255), 2, cv2.LINE_AA)
         else:
             print("not found lines")
             raise
@@ -275,7 +283,8 @@ class Binary_proc:
         if lines_crop is not None:
             for x in range(0, len(lines_crop)):
                 for x1, y1, x2, y2 in lines_crop[x]:
-                    cv2.line(cropped_color_img, (x1, y1), (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
+                    cv2.line(cropped_color_img, (x1, y1),
+                             (x2, y2), (0, 0, 255), 2, cv2.LINE_AA)
         else:
             print("not found lines")
             raise
@@ -283,11 +292,12 @@ class Binary_proc:
         if not os.path.exists(os.path.join(self.saver_path, "hougn")):
             os.makedirs(os.path.join(self.saver_path, "hougn"))
 
-        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_"+img_n), det)
-        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_crop_"+img_n), cropped_img)
-        cv2.imwrite(os.path.join(self.saver_path, 'hougn', "hougn_crop_color_"+img_n), cropped_color_img)
-
-
+        cv2.imwrite(os.path.join(self.saver_path,
+                    'hougn', "hougn_"+img_n), det)
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn',
+                    "hougn_crop_"+img_n), cropped_img)
+        cv2.imwrite(os.path.join(self.saver_path, 'hougn',
+                    "hougn_crop_color_"+img_n), cropped_color_img)
 
     # def binary_threshold_seg(self, img_n):
     #
@@ -349,7 +359,6 @@ class Binary_proc:
     #     cv2.imwrite(os.path.join(self.saver_path, "canny_"+img_n), edges)
     #     cv2.imwrite(os.path.join(self.saver_path, "hough_"+img_n), crop)
 
-
     def proc(self):
         try:
 
@@ -370,7 +379,6 @@ class Kmeans_cluster:
         self.img_path = img_path
         self.saver_path = saver_path
 
-
     def cluster_k_means(self, img_n, visual_flag):
 
         img = cv2.imread(os.path.join(self.img_path, img_n))
@@ -381,12 +389,12 @@ class Kmeans_cluster:
         vectorized_gray = gray_img.reshape((-1, 1))
         vectorized_gray = np.float32(vectorized_gray)
 
-
         rgb_img = img[y: y+h, x:x+w]
         vectorized_rgb = rgb_img.reshape((-1, 3))
         vectorized_rgb = np.float32(vectorized_rgb)
 
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+        criteria = (cv2.TERM_CRITERIA_EPS +
+                    cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
 
         """
         cv2.kmeans(sample, nclusters(K), criteria, attempts, flags)
@@ -403,10 +411,12 @@ class Kmeans_cluster:
         K = 10
         attempts = 10
 
-        ret_rgb, label_rgb, center_rgb = cv2.kmeans(vectorized_rgb, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
-        ret_gray, label_gray, center_gray = cv2.kmeans(vectorized_gray, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
+        ret_rgb, label_rgb, center_rgb = cv2.kmeans(
+            vectorized_rgb, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
+        ret_gray, label_gray, center_gray = cv2.kmeans(
+            vectorized_gray, K, None, criteria, attempts, cv2.KMEANS_PP_CENTERS)
 
-        #rgb
+        # rgb
         center_rgb = np.uint8(center_rgb)
         res_rgb = center_rgb[label_rgb.flatten()]
         result_image_rgb = res_rgb.reshape(rgb_img.shape)
@@ -419,16 +429,20 @@ class Kmeans_cluster:
             for i in range(K):
                 globals()["label_{}".format(i+1)] = np.zeros(label_rgb.shape)
                 globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
-                globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
-                plt.subplot(1, K, i+1), plt.imshow(globals()["label_{}".format(i+1)])
-                plt.title(f'Segmented Image when {i+1}/{K}'), plt.xticks([]), plt.yticks([])
+                globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)
+                                                              ].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
+                plt.subplot(1, K, i+1), plt.imshow(globals()
+                                                   ["label_{}".format(i+1)])
+                plt.title(
+                    f'Segmented Image when {i+1}/{K}'), plt.xticks([]), plt.yticks([])
             plt.show()
 
         else:
             for i in range(K):
                 globals()["label_{}".format(i+1)] = np.zeros(label_rgb.shape)
                 globals()["label_{}".format(i+1)][np.where(label_rgb == i)] = 1
-                globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
+                globals()["label_{}".format(i+1)] = globals()["label_{}".format(i+1)
+                                                              ].reshape((rgb_img.shape[0], rgb_img.shape[1]))*255.
 
             k1_image = label_1
             k2_image = label_2
@@ -447,18 +461,28 @@ class Kmeans_cluster:
             if not os.path.exists(os.path.join(self.saver_path, "clustering")):
                 os.makedirs(os.path.join(self.saver_path, "clustering"))
 
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{1}_" + img_n), k1_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{2}_" + img_n), k2_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{3}_" + img_n), k3_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{4}_" + img_n), k4_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{5}_" + img_n), k5_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{6}_" + img_n), k6_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{7}_" + img_n), k7_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{8}_" + img_n), k8_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{9}_" + img_n), k9_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_k{10}_" + img_n), k10_image)
-            cv2.imwrite(os.path.join(self.saver_path, "clustering", f"clustering_final_" + img_n), final_image)
-
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{1}_" + img_n), k1_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{2}_" + img_n), k2_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{3}_" + img_n), k3_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{4}_" + img_n), k4_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{5}_" + img_n), k5_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{6}_" + img_n), k6_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{7}_" + img_n), k7_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{8}_" + img_n), k8_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{9}_" + img_n), k9_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_k{10}_" + img_n), k10_image)
+            cv2.imwrite(os.path.join(self.saver_path, "clustering",
+                        f"clustering_final_" + img_n), final_image)
 
     def proc(self):
         try:
@@ -471,16 +495,13 @@ class Kmeans_cluster:
             print(f"Error Discript: {e}")
 
 
-
 class Circle_detec:
     def __init__(self, img_name_list, img_path, saver_path):
         self.img_name_list = img_name_list
         self.img_path = img_path
         self.saver_path = saver_path
 
-    
     def cc_detec(self, img_n):
-
         """
         검출 방법은 항상 2단계 허프 변환 방법(21HT, 그레이디언트)만 사용합니다.
 
@@ -536,12 +557,15 @@ class Circle_detec:
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 3)
-        circles_small = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, resolution_ratio_s, each_circle_min_distance_s, param1=canny_threshold_s, param2=mid_threshold_s, minRadius=minRadius_s, maxRadius=maxRadius_s)
-        circles_big = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, resolution_ratio_b, each_circle_min_distance_b, param1=canny_threshold_b, param2=mid_threshold_b, minRadius=minRadius_b, maxRadius=maxRadius_b)
-        
+        circles_small = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, resolution_ratio_s, each_circle_min_distance_s,
+                                         param1=canny_threshold_s, param2=mid_threshold_s, minRadius=minRadius_s, maxRadius=maxRadius_s)
+        circles_big = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, resolution_ratio_b, each_circle_min_distance_b,
+                                       param1=canny_threshold_b, param2=mid_threshold_b, minRadius=minRadius_b, maxRadius=maxRadius_b)
+
         for i in circles_big[0]:
             # dst = img.copy()
-            cv2.circle(dst_b, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 1)
+            cv2.circle(dst_b, (int(i[0]), int(i[1])),
+                       int(i[2]), (255, 255, 255), 1)
 
             print(f"center (x, y) = {(int(i[0]), int(i[1]))}")
 
@@ -550,11 +574,12 @@ class Circle_detec:
             # img_num += 1
 
             # if img_num == 1 or img_num == 50:
-                # print(i)
+            # print(i)
 
         for i in circles_small[0]:
             # dst = img.copy()
-            cv2.circle(dst_s, (int(i[0]), int(i[1])), int(i[2]), (255, 255, 255), 1)
+            cv2.circle(dst_s, (int(i[0]), int(i[1])),
+                       int(i[2]), (255, 255, 255), 1)
 
             # cv2.imwrite(os.path.join('./circle_detection_result/%04d.png' %img_num), dst)
 
@@ -567,16 +592,15 @@ class Circle_detec:
         cv2.imshow("big", dst_b)
         cv2.waitKey()
         cv2.destroyAllWindows()
-        
 
     def proc(self):
 
         try:
-            
+
             for img_name in self.img_name_list:
 
                 self.cc_detec(img_name)
-        
+
         except Exception as e:
             print(f"Error Discript: {e}")
 
@@ -585,20 +609,20 @@ class Trackbar_window:
     def __init__(self, img_name_list, img_path, saver_path):
         self.img_name_list = img_name_list
         self.img_path = img_path
-        self.saver_path = saver_path        
+        self.saver_path = saver_path
 
-    
     def trackbar_window(self, img_n):
 
         def onChange(pos):
             pass
 
-        src = cv2.imread(os.path.join(self.img_path, img_n), cv2.IMREAD_GRAYSCALE)
+        src = cv2.imread(os.path.join(self.img_path, img_n),
+                         cv2.IMREAD_GRAYSCALE)
 
         cv2.namedWindow("Trackbar Windows")
 
         cv2.createTrackbar("threshold", "Trackbar Windows", 0, 255, onChange)
-        cv2.createTrackbar("maxValue", "Trackbar Windows", 0, 255, lambda x : x)
+        cv2.createTrackbar("maxValue", "Trackbar Windows", 0, 255, lambda x: x)
 
         cv2.setTrackbarPos("threshold", "Trackbar Windows", 127)
         cv2.setTrackbarPos("maxValue", "Trackbar Windows", 255)
@@ -612,13 +636,11 @@ class Trackbar_window:
 
             cv2.imshow("Trackbar Windows", binary)
 
-
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
-
     def proc(self):
-        
+
         try:
 
             for img_name in self.img_name_list:
@@ -627,8 +649,6 @@ class Trackbar_window:
 
         except Exception as e:
             print(e)
-
-
 
 
 if __name__ == "__main__":
@@ -651,16 +671,13 @@ if __name__ == "__main__":
 
     # image_path, image_list, save_path
 
-    # binary_proc = Binary_proc(img_list, img_path, saver_path)
-    # binary_proc.proc()
+    binary_proc = Binary_proc(img_list, img_path, saver_path)
+    binary_proc.proc()
 
-    kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
-    kmeans_cluster_1.proc()
+    # kmeans_cluster_1 = Kmeans_cluster(img_list, img_path, saver_path)
+    # kmeans_cluster_1.proc()
 
     # circle = Circle_detec(img_list, img_path, saver_path)
     # circle.proc()
 
-
     print("End Processing")
-
-
